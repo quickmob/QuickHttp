@@ -20,7 +20,8 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
-    implementation project(':http')
+    //implementation project(':http')
+    implementation 'com.github.quickmob:QuickHttp:latest.release'
     implementation 'com.squareup.okhttp3:okhttp:3.12.13'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.12.13'
     implementation 'androidx.appcompat:appcompat:1.1.0'

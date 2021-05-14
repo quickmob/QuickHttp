@@ -28,7 +28,7 @@ android {
 }
 
 dependencies {
-    //最新版本请看上面
+    //框架依赖：其中latest.release指代最新版本号，也可以指定明确的版本号，例如1.0.1
     implementation 'com.github.quickmob:QuickHttp:latest.release'
     //okhttp3依赖
     implementation 'com.squareup.okhttp3:okhttp:3.12.13'
@@ -39,4 +39,4 @@ dependencies {
   具体看demo
 
 #### 混淆配置
-  此资源库自带混淆规则，并且会自动导入，正常情况下无需手动导入。
+  此框架库自带混淆规则，并且会自动导入，正常情况下无需手动导入
