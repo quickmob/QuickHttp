@@ -1,0 +1,36 @@
+buildscript {
+    repositories {
+        google()
+        //官方出公告已经不维护这个仓库了https://developer.android.google.cn/studio/build/jcenter-migration
+        //jcenter()
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url 'https://jitpack.io'
+        }
+    }
+    dependencies {
+        if (isReleaseJitpack.toBoolean()) {
+            classpath 'com.android.tools.build:gradle:3.2.1'
+        } else {
+            classpath 'com.android.tools.build:gradle:4.1.2'
+        }
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        //官方出公告已经不维护这个仓库了https://developer.android.google.cn/studio/build/jcenter-migration
+        //jcenter()
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url 'https://jitpack.io'
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

@@ -1,0 +1,29 @@
+apply plugin: 'com.android.application'
+apply from: '../common.gradle'
+
+android {
+    defaultConfig {
+        applicationId "com.lookballs.app.http"
+        versionName "1.0.0"
+        versionCode 100000
+    }
+    lintOptions {
+        abortOnError false
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
+    implementation project(':http')
+    implementation 'com.squareup.okhttp3:okhttp:3.12.13'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.12.13'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.blankj:utilcodex:1.30.6'
+}
