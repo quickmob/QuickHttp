@@ -287,6 +287,8 @@ public class QuickUtils {
     public static boolean isMultipart(Object object) {
         if (object instanceof File) {//如果这是一个文件
             return true;
+        } else if (object instanceof List && QuickUtils.isFileList((List) object)) {//如果这是一个文件列表
+            return true;
         } else if (object instanceof InputStream) {//如果这是一个输入流
             return true;
         } else if (object instanceof MultipartBody.Part) {//如果这是一个自定义的MultipartBody.Part对象

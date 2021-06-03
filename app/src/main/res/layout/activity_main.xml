@@ -89,6 +89,12 @@
                 android:onClick="uploadRequest"
                 android:text="上传文件请求" />
 
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="uploadMoreRequest"
+                android:text="上传多文件请求" />
+
             <ProgressBar
                 android:id="@+id/downloadProgress"
                 style="?android:attr/progressBarStyleHorizontal"

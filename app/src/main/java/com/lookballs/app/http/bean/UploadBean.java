@@ -2,12 +2,6 @@ package com.lookballs.app.http.bean;
 
 public class UploadBean {
 
-    /**
-     * status : 0
-     * msg : Success
-     * data : {"sgin":null,"url":"https://mo.baidu.com/boxandroid?from=1023544j&source=1023534z"}
-     */
-
     private int status;
     private String msg;
     private DataBean data;
@@ -37,11 +31,6 @@ public class UploadBean {
     }
 
     public static class DataBean {
-        /**
-         * sgin : null
-         * url : https://mo.baidu.com/boxandroid?from=1023544j&source=1023534z
-         */
-
         private Object sgin;
         private String url;
 

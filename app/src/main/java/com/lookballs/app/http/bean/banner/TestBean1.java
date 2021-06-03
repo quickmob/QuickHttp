@@ -1,7 +1,7 @@
 package com.lookballs.app.http.bean.banner;
 
-public class TestBean1<T> {
-    public String errorMsg;
-    public int errorCode;
+import com.lookballs.app.http.bean.BaseBean;
+
+public class TestBean1<T> extends BaseBean {
     public T data;
 }

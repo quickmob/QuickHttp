@@ -1,5 +1,6 @@
 package com.lookballs.http.core.converter;
 
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LifecycleOwner;
 
 import java.lang.reflect.Type;
@@ -18,7 +19,7 @@ public interface IDataConverter {
      * @param type           解析类型
      * @return
      */
-    Object onSucceed(LifecycleOwner lifecycleOwner, Response response, Type type) throws Exception;
+    Object onSucceed(@Nullable LifecycleOwner lifecycleOwner, Response response, Type type) throws Exception;
 
     /**
      * 请求失败时回调
@@ -27,5 +28,5 @@ public interface IDataConverter {
      * @param e              错误对象
      * @return
      */
-    Exception onFail(LifecycleOwner lifecycleOwner, Exception e);
+    Exception onFail(@Nullable LifecycleOwner lifecycleOwner, Exception e);
 }

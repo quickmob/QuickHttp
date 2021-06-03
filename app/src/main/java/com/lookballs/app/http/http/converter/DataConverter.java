@@ -3,6 +3,7 @@ package com.lookballs.app.http.http.converter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.lookballs.app.http.util.gson.GsonUtil;
@@ -55,7 +56,7 @@ public final class DataConverter implements IDataConverter {
     }
 
     @Override
-    public Object onSucceed(LifecycleOwner lifecycleOwner, Response response, Type type) throws Exception {
+    public Object onSucceed(@Nullable LifecycleOwner lifecycleOwner, Response response, Type type) throws Exception {
         long currentTime = getResponseTimeMill(response);
         QuickLogUtils.i(TAG, "当前服务器时间：" + currentTime);
 
@@ -96,7 +97,7 @@ public final class DataConverter implements IDataConverter {
     }
 
     @Override
-    public Exception onFail(LifecycleOwner lifecycleOwner, Exception e) {
+    public Exception onFail(@Nullable LifecycleOwner lifecycleOwner, Exception e) {
         QuickLogUtils.printStackTrace(e);
         return e;
     }

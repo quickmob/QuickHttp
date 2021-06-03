@@ -36,19 +36,11 @@ public final class ActivityLifecycle implements
         }
     }
 
-    /**
-     * {@link LifecycleOwner}
-     */
-
     @NonNull
     @Override
     public Lifecycle getLifecycle() {
         return mLifecycle;
     }
-
-    /**
-     * {@link LifecycleEventObserver}
-     */
 
     @Override
     public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {
@@ -59,10 +51,6 @@ public final class ActivityLifecycle implements
         source.getLifecycle().removeObserver(this);
         mActivity = null;
     }
-
-    /**
-     * {@link Application.ActivityLifecycleCallbacks}
-     */
 
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
@@ -121,5 +109,6 @@ public final class ActivityLifecycle implements
 
     @Override
     public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+
     }
 }

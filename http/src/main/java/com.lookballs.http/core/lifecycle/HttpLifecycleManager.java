@@ -6,6 +6,7 @@ import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.lookballs.http.QuickHttp;
+import com.lookballs.http.utils.QuickLogUtils;
 
 /**
  * 请求生命周期控制
@@ -16,7 +17,11 @@ public final class HttpLifecycleManager implements LifecycleEventObserver {
      * 绑定组件的生命周期
      */
     public static void bind(LifecycleOwner lifecycleOwner) {
-        lifecycleOwner.getLifecycle().addObserver(new HttpLifecycleManager());
+        if (lifecycleOwner != null) {
+            lifecycleOwner.getLifecycle().addObserver(new HttpLifecycleManager());
+        } else {
+            QuickLogUtils.i("The lifecycleOwner object is null");
+        }
     }
 
     /**

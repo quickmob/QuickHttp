@@ -16,6 +16,7 @@ import com.blankj.utilcode.util.IntentUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.lookballs.app.http.bean.BaseBean;
 import com.lookballs.app.http.bean.UploadBean;
+import com.lookballs.app.http.bean.UploadFilesBean;
 import com.lookballs.app.http.bean.banner.BannerBean;
 import com.lookballs.app.http.bean.banner.TestBean1;
 import com.lookballs.app.http.bean.banner.TestBean2;
@@ -36,6 +37,7 @@ import com.lookballs.http.listener.OnUploadListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Call;
@@ -324,6 +326,58 @@ public class MainActivity extends BaseActivity {
                             ToastUtils.showShort("上传成功");
                         } else {
                             ToastUtils.showShort("上传失败：" + result.getMsg());
+                        }
+                    }
+
+                    @Override
+                    public void onError(int code, Exception e) {
+                        ToastUtils.showShort("上传失败：" + e.getMessage());
+                    }
+
+                    @Override
+                    public void onEnd(Call call) {
+                        downloadProgress.setVisibility(View.GONE);
+                    }
+                });
+    }
+
+    public void uploadMoreRequest(View view) {
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), getString(R.string.app_name) + ".png");
+        if (!file.exists()) {
+            drawableToFile(ContextCompat.getDrawable(this, R.drawable.bg), file);
+        }
+
+        List<File> files = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            files.add(file);
+        }
+        HttpParams httpParams = new HttpParams();
+        for (int i = 0; i < files.size(); i++) {
+            httpParams.put("files" + "[" + i + "]", files.get(i));
+        }
+        //httpParams.put("files", files);
+
+        httpParams.put("type", 6);
+        QuickHttp.post(MainActivity.this)
+                .url("http://xxxx/v1/upload/files")
+                .params(httpParams)
+                .async(UploadFilesBean.class, new OnUploadListener<UploadFilesBean>() {
+                    @Override
+                    public void onStart(Call call) {
+                        downloadProgress.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onProgress(UploadInfo info) {
+                        downloadProgress.setProgress(info.getProgress());
+                    }
+
+                    @Override
+                    public void onSucceed(UploadFilesBean result) {
+                        if (result.getCode() == 0) {
+                            ToastUtils.showShort("上传成功");
+                        } else {
+                            ToastUtils.showShort("上传失败：" + result.getMessage());
                         }
                     }
 
