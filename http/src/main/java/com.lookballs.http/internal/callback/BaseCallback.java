@@ -25,13 +25,17 @@ public abstract class BaseCallback implements Callback {
     private final int mRetryCount;//设置重试次数
     private final long mRetryDelayMillis;//设置重试延迟时间
     private final LifecycleOwner mLifecycleOwner;//生命周期管理
+    private final boolean mBindLife;//是否绑定生命周期
     private final OnRetryConditionListener mOnRetryConditionListener;//设置重试条件
 
     private int mCurrentRetryCount;//当前重试次数
 
-    public BaseCallback(LifecycleOwner lifecycleOwner, HttpCall call, int retryCount, long retryDelayMillis, OnRetryConditionListener onRetryConditionListener) {
+    public BaseCallback(LifecycleOwner lifecycleOwner, boolean isBindLife, HttpCall call, int retryCount, long retryDelayMillis, OnRetryConditionListener onRetryConditionListener) {
         mLifecycleOwner = lifecycleOwner;
-        HttpLifecycleManager.bind(lifecycleOwner);
+        mBindLife = isBindLife;
+        if (isBindLife()) {
+            HttpLifecycleManager.bind(lifecycleOwner);
+        }
         mHttpCall = call;
         if (retryCount > 0) {
             mRetryCount = retryCount;
@@ -54,6 +58,10 @@ public abstract class BaseCallback implements Callback {
         return mLifecycleOwner;
     }
 
+    public boolean isBindLife() {
+        return mBindLife;
+    }
+
     public HttpCall getCall() {
         return mHttpCall;
     }
@@ -61,18 +69,13 @@ public abstract class BaseCallback implements Callback {
     @Override
     public void onResponse(final Call call, final Response response) {
         try {
-            if (!call.isCanceled()) {
-                if (response.body() != null) {
-                    onResponse(response);
-                } else {
-                    onFailure(new Exception("The response body == null"));
-                }
-            } else {
-                QuickLogUtils.i("onResponse call isCanceled");
-            }
+            //收到响应
+            onResponse(response);
         } catch (Exception e) {
+            //回调失败
             onFailure(e);
         } finally {
+            //关闭响应
             response.close();
         }
     }
@@ -102,15 +105,23 @@ public abstract class BaseCallback implements Callback {
     }
 
     private void retryRequest(Call call) {
-        if (HttpLifecycleManager.isLifecycleActive(getLifecycleOwner())) {
-            mCurrentRetryCount++;
-            Call newCall = call.clone();
-            mHttpCall.setCall(newCall);
-            newCall.enqueue(BaseCallback.this);
-            QuickLogUtils.i("延时" + mRetryDelayMillis + "毫秒后进行重试，当前重试次数：" + mCurrentRetryCount);
+        if (isBindLife()) {
+            if (HttpLifecycleManager.isLifecycleActive(getLifecycleOwner())) {
+                retryCall(call);
+            } else {
+                QuickLogUtils.i("宿主已被销毁，无法进行重试");
+            }
         } else {
-            QuickLogUtils.i("宿主已被销毁，无法进行重试");
+            retryCall(call);
         }
+    }
+
+    private void retryCall(Call call) {
+        mCurrentRetryCount++;
+        Call newCall = call.clone();
+        mHttpCall.setCall(newCall);
+        newCall.enqueue(BaseCallback.this);
+        QuickLogUtils.i("延时" + mRetryDelayMillis + "毫秒后进行重试，当前重试次数：" + mCurrentRetryCount);
     }
 
     private boolean defaultRetryCondition(Exception e) {

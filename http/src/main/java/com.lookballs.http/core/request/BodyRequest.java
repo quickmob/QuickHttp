@@ -1,7 +1,5 @@
 package com.lookballs.http.core.request;
 
-import androidx.lifecycle.LifecycleOwner;
-
 import com.lookballs.http.core.model.BodyType;
 import com.lookballs.http.core.model.HttpHeaders;
 import com.lookballs.http.core.model.HttpParams;
@@ -89,8 +87,8 @@ public abstract class BodyRequest<T extends BodyRequest> extends BaseRequest<T> 
         super.async(clazz, listener);
     }
 
-    public BodyRequest(LifecycleOwner lifecycleOwner) {
-        super(lifecycleOwner);
+    public BodyRequest(String url) {
+        super(url);
     }
 
     @Override
@@ -174,7 +172,7 @@ public abstract class BodyRequest<T extends BodyRequest> extends BaseRequest<T> 
             body = formBuilder.build();
         }
         if (mOnUploadListener != null) {
-            return new ProgressBody(body, getLifecycleOwner(), mOnUploadListener, mRefreshTime);
+            return new ProgressBody(body, getLifecycleOwner(), isBindLife(), mOnUploadListener);
         } else {
             return body;
         }

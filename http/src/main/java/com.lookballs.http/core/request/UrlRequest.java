@@ -1,7 +1,5 @@
 package com.lookballs.http.core.request;
 
-import androidx.lifecycle.LifecycleOwner;
-
 import com.lookballs.http.core.model.BodyType;
 import com.lookballs.http.core.model.HttpHeaders;
 import com.lookballs.http.core.model.HttpParams;
@@ -25,8 +23,8 @@ public abstract class UrlRequest<T extends UrlRequest> extends BaseRequest<T> {
         return (T) this;
     }
 
-    public UrlRequest(LifecycleOwner lifecycleOwner) {
-        super(lifecycleOwner);
+    public UrlRequest(String url) {
+        super(url);
     }
 
     @Override

@@ -79,92 +79,71 @@ public class QuickHttp {
     /**
      * get请求
      *
-     * @param lifecycleOwner 有生命周期的对象（例如AppCompatActivity、FragmentActivity、Fragment等）
-     *                       如需传入其他对象请参考以下两个类
-     *                       {@link com.lookballs.http.core.lifecycle.ActivityLifecycle}
-     *                       {@link com.lookballs.http.core.lifecycle.ApplicationLifecycle}
+     * @param url
      * @return
      */
-    public static GetRequest get(LifecycleOwner lifecycleOwner) {
-        return GetRequest.with(lifecycleOwner);
+    public static GetRequest get(String url) {
+        return GetRequest.with(url);
     }
 
     /**
      * head请求
      *
-     * @param lifecycleOwner 有生命周期的对象（例如AppCompatActivity、FragmentActivity、Fragment等）
-     *                       如需传入其他对象请参考以下两个类
-     *                       {@link com.lookballs.http.core.lifecycle.ActivityLifecycle}
-     *                       {@link com.lookballs.http.core.lifecycle.ApplicationLifecycle}
+     * @param url
      * @return
      */
-    public static HeadRequest head(LifecycleOwner lifecycleOwner) {
-        return HeadRequest.with(lifecycleOwner);
+    public static HeadRequest head(String url) {
+        return HeadRequest.with(url);
     }
 
     /**
      * post请求
      *
-     * @param lifecycleOwner 有生命周期的对象（例如AppCompatActivity、FragmentActivity、Fragment等）
-     *                       如需传入其他对象请参考以下两个类
-     *                       {@link com.lookballs.http.core.lifecycle.ActivityLifecycle}
-     *                       {@link com.lookballs.http.core.lifecycle.ApplicationLifecycle}
+     * @param url
      * @return
      */
-    public static PostRequest post(LifecycleOwner lifecycleOwner) {
-        return PostRequest.with(lifecycleOwner);
+    public static PostRequest post(String url) {
+        return PostRequest.with(url);
     }
 
     /**
      * delete请求
      *
-     * @param lifecycleOwner 有生命周期的对象（例如AppCompatActivity、FragmentActivity、Fragment等）
-     *                       如需传入其他对象请参考以下两个类
-     *                       {@link com.lookballs.http.core.lifecycle.ActivityLifecycle}
-     *                       {@link com.lookballs.http.core.lifecycle.ApplicationLifecycle}
+     * @param url
      * @return
      */
-    public static DeleteRequest delete(LifecycleOwner lifecycleOwner) {
-        return DeleteRequest.with(lifecycleOwner);
+    public static DeleteRequest delete(String url) {
+        return DeleteRequest.with(url);
     }
 
     /**
      * patch请求
      *
-     * @param lifecycleOwner 有生命周期的对象（例如AppCompatActivity、FragmentActivity、Fragment等）
-     *                       如需传入其他对象请参考以下两个类
-     *                       {@link com.lookballs.http.core.lifecycle.ActivityLifecycle}
-     *                       {@link com.lookballs.http.core.lifecycle.ApplicationLifecycle}
+     * @param url
      * @return
      */
-    public static PatchRequest patch(LifecycleOwner lifecycleOwner) {
-        return PatchRequest.with(lifecycleOwner);
+    public static PatchRequest patch(String url) {
+        return PatchRequest.with(url);
     }
 
     /**
      * put请求
      *
-     * @param lifecycleOwner 有生命周期的对象（例如AppCompatActivity、FragmentActivity、Fragment等）
-     *                       如需传入其他对象请参考以下两个类
-     *                       {@link com.lookballs.http.core.lifecycle.ActivityLifecycle}
-     *                       {@link com.lookballs.http.core.lifecycle.ApplicationLifecycle}
+     * @param url
      * @return
      */
-    public static PutRequest put(LifecycleOwner lifecycleOwner) {
-        return PutRequest.with(lifecycleOwner);
+    public static PutRequest put(String url) {
+        return PutRequest.with(url);
     }
 
     /**
      * download请求
      *
-     * @param lifecycleOwner 有生命周期的对象（例如AppCompatActivity、FragmentActivity、Fragment等）
-     *                       如需传入其他对象请参考以下两个类
-     *                       {@link com.lookballs.http.core.lifecycle.ActivityLifecycle}
-     *                       {@link com.lookballs.http.core.lifecycle.ApplicationLifecycle}
+     * @param url
      * @return
      */
-    public static DownloadRequest download(LifecycleOwner lifecycleOwner) {
-        return DownloadRequest.with(lifecycleOwner);
+    public static DownloadRequest download(String url) {
+        return DownloadRequest.with(url);
     }
 
     /**

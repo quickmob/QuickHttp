@@ -6,13 +6,20 @@ import android.graphics.BitmapFactory;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LifecycleOwner;
 
+import com.google.gson.JsonSyntaxException;
+import com.lookballs.app.http.bean.BaseBean;
 import com.lookballs.app.http.util.gson.GsonUtil;
 import com.lookballs.http.core.converter.IDataConverter;
+import com.lookballs.http.core.exception.DataException;
+import com.lookballs.http.core.exception.ResultException;
+import com.lookballs.http.core.exception.TokenException;
 import com.lookballs.http.utils.QuickLogUtils;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
@@ -74,23 +81,52 @@ public final class DataConverter implements IDataConverter {
             //如果这是一个InputStream对象
             return body.byteStream();
         } else {
-            String text = body.string();
+            String text;
+            try {
+                text = body.string();
+            } catch (IOException e) {
+                throw new DataException("数据解析异常", e);
+            }
             //打印文本
             printText(response, text);
 
             Object result = null;
             if (String.class.equals(type)) {
-                //如果这是一个 String 对象
+                //如果这是一个String对象
                 result = text;
             } else if (JSONObject.class.equals(type)) {
-                //如果这是一个 JSONObject 对象
-                result = new JSONObject(text);
+                try {
+                    //如果这是一个JSONObject对象
+                    result = new JSONObject(text);
+                } catch (JSONException e) {
+                    throw new DataException("数据解析异常", e);
+                }
             } else if (JSONArray.class.equals(type)) {
-                //如果这是一个 JSONArray 对象
-                result = new JSONArray(text);
+                try {
+                    //如果这是一个JSONArray对象
+                    result = new JSONArray(text);
+                } catch (JSONException e) {
+                    throw new DataException("数据解析异常", e);
+                }
             } else {
-                //处理Json解析结果
-                result = GsonUtil.fromJson(text, type);
+                try {
+                    //处理Json解析结果
+                    result = GsonUtil.fromJson(text, type);
+                } catch (JsonSyntaxException e) {
+                    throw new DataException("数据解析异常", e);
+                }
+                if (result instanceof BaseBean) {
+                    BaseBean model = (BaseBean) result;
+                    if (model.errorCode == 0) {
+                        //代表执行成功
+                        return result;
+                    } else if (model.errorCode == 1001) {
+                        //代表登录失效，需要重新登录
+                        throw new TokenException("登录失效，请重新登录");
+                    }
+                    //代表执行失败
+                    throw new ResultException(model.errorMsg, model);
+                }
             }
             return result;
         }

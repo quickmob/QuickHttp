@@ -34,6 +34,8 @@ import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * 工具类
@@ -135,35 +137,38 @@ public class QuickUtils {
      * 获取进度百分比
      */
     public static int getProgress(long totalByte, long currentByte) {
-        //计算百分比，这里踩了两个坑
-        //当文件很大的时候：字节数 * 100 会超过 int 最大值，计算结果会变成负数
-        //还有需要注意的是，long 除以 long 等于 long，这里的字节数除以总字节数应该要 double 类型的
-        return (int) (((double) currentByte / totalByte) * 100);
+        if (totalByte <= 0 && currentByte <= 0) {
+            return 0;
+        }
+        double value = ((double) currentByte / totalByte) * 100;
+        return (int) (value);
     }
 
     /**
      * 获取精确进度百分比
      */
     public static double getPreciseProgress(long totalByte, long currentByte) {
-        return Double.parseDouble(div(String.valueOf(totalByte), String.valueOf(currentByte), 2, false));
+        if (totalByte <= 0 && currentByte <= 0) {
+            return 0.00;
+        }
+        double value = ((double) currentByte / totalByte) * 100;
+        return round(value, 2, true);
     }
 
     /**
-     * 提供精确的除法运算
+     * 提供精确的小数位处理
      *
-     * @param v1    被除数
-     * @param v2    除数
+     * @param v     需要四舍五入的数字
      * @param scale 保留scale位小数
      * @param isIn  是否四舍五入
      * @return
      */
-    public static String div(String v1, String v2, int scale, boolean isIn) {
+    public static double round(double v, int scale, boolean isIn) {
         if (scale < 0) {
             throw new IllegalArgumentException("保留的小数位数必须大于零");
         }
-        BigDecimal b1 = new BigDecimal(v1);
-        BigDecimal b2 = new BigDecimal(v2);
-        return b1.divide(b2, scale, isIn ? BigDecimal.ROUND_HALF_UP : BigDecimal.ROUND_FLOOR).toString();
+        BigDecimal b = new BigDecimal(v);
+        return b.setScale(scale, isIn ? BigDecimal.ROUND_HALF_UP : BigDecimal.ROUND_FLOOR).doubleValue();
     }
 
     /**
@@ -314,6 +319,47 @@ public class QuickUtils {
     }
 
     /**
+     * 设置断点下载开始位置，结束位置默认为文件末尾
+     *
+     * @param startIndex 开始位置
+     */
+    public static void setRangeHeader(HttpHeaders headers, long startIndex) {
+        setRangeHeader(headers, startIndex, -1);
+    }
+
+    /**
+     * 设置断点下载范围
+     * 注：
+     * 1、开始位置小于0，及代表下载完整文件
+     * 2、结束位置要大于开始位置，否则结束位置默认为文件末尾
+     *
+     * @param startIndex 开始位置
+     * @param endIndex   结束位置
+     */
+    public static void setRangeHeader(HttpHeaders headers, long startIndex, long endIndex) {
+        if (endIndex < startIndex) endIndex = -1;
+        String headerValue = "bytes=" + startIndex + "-";
+        if (endIndex >= 0) {
+            headerValue = headerValue + endIndex;
+        }
+        headers.put("RANGE", headerValue);
+    }
+
+    /**
+     * 校验文件是否合法
+     *
+     * @param fileMd5
+     * @param file
+     * @return
+     */
+    public static boolean checkFileSafe(String fileMd5, File file) {
+        if (!TextUtils.isEmpty(fileMd5) && file.exists() && file.isFile() && fileMd5.equalsIgnoreCase(getFileMD5(file))) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * 获取文件的 MD5
      */
     public static String getFileMD5(File file) {
@@ -344,5 +390,50 @@ public class QuickUtils {
             closeStream(dis);
         }
         return null;
+    }
+
+    /**
+     * 先从ResponseBody中获取contentLength，如果ResponseBody为空再从响应头Content-Range中获取contentLength
+     * 注：该值为当前请求需要下载的总长度，并不是文件的总长度
+     *
+     * @param response
+     * @return
+     */
+    public static long getContentLength(Response response) {
+        long contentLength = -1;
+        ResponseBody body = response.body();
+        if (body != null) {
+            //报HTTP 416 Range Not Satisfiable错误响应代码指示服务器无法提供请求的范围，body.contentLength()返回0
+            if ((contentLength = body.contentLength()) > 0) {
+                return contentLength;
+            }
+        }
+        String headerValue = response.header("Content-Range");
+        if (headerValue != null) {
+            //正确响应头Content-Range格式 : bytes 100001-20000000/20000001
+            //异常响应头Content-Range格式 : bytes */20000001 报HTTP 416 Range Not Satisfiable错误响应代码指示服务器无法提供请求的范围
+            try {
+                int divideIndex = headerValue.indexOf("/"); //斜杠下标
+                int blankIndex = headerValue.indexOf(" ");
+                String fromToValue = headerValue.substring(blankIndex + 1, divideIndex);
+                String[] split = fromToValue.split("-");
+                long start = Long.parseLong(split[0]); //开始下载位置
+                long end = Long.parseLong(split[1]);   //结束下载位置
+                contentLength = end - start + 1;       //要下载的总长度
+            } catch (Exception e) {
+                QuickLogUtils.printStackTrace(e);
+            }
+        }
+        return contentLength;
+    }
+
+    /**
+     * 从响应头Content-MD5中获取文件MD5值
+     *
+     * @param response
+     * @return
+     */
+    public static String getContentMD5(Response response) {
+        return response.header("Content-MD5");
     }
 }

@@ -1,7 +1,5 @@
 package com.lookballs.http.internal.body;
 
-import android.os.SystemClock;
-
 import androidx.lifecycle.LifecycleOwner;
 
 import com.lookballs.http.core.lifecycle.HttpLifecycleManager;
@@ -28,20 +26,19 @@ public final class ProgressBody extends RequestBody {
     private final RequestBody mRequestBody;//RequestBody
     private final UploadInfo mUploadInfo;//上传进度信息
     private final LifecycleOwner mLifecycleOwner;//LifecycleOwner
+    private final boolean mBindLife;//是否绑定生命周期
     private final OnUploadListener mListener;//上传回调
-    private final long mRefreshTime;//上传回调进度刷新时间
 
     private long mTotalByte;//总字节数
     private long mUploadByte;//已上传字节数
-    private int lastProgress;//最后一次刷新的进度
-    private long lastRefreshTime = 0L;//最后一次刷新进度的时间
+    private double lastProgress;//最后一次刷新的进度
 
-    public ProgressBody(RequestBody body, LifecycleOwner lifecycleOwner, OnUploadListener listener, long refreshTime) {
+    public ProgressBody(RequestBody body, LifecycleOwner lifecycleOwner, boolean isBindLife, OnUploadListener listener) {
         mRequestBody = body;
         mUploadInfo = new UploadInfo();
         mLifecycleOwner = lifecycleOwner;
+        mBindLife = isBindLife;
         mListener = listener;
-        mRefreshTime = refreshTime;
     }
 
     @Override
@@ -58,7 +55,6 @@ public final class ProgressBody extends RequestBody {
     public void writeTo(BufferedSink sink) throws IOException {
         mTotalByte = contentLength();
         mUploadInfo.setTotalLength(mTotalByte);
-        mUploadInfo.setRefreshTime(mRefreshTime);
 
         sink = Okio.buffer(new WrapperSink(sink));
         mRequestBody.writeTo(sink);
@@ -77,24 +73,23 @@ public final class ProgressBody extends RequestBody {
             mUploadByte += byteCount;
             mUploadInfo.setUploadLength(mUploadByte);
 
-            QuickUtils.runOnUiThread(mListener != null, new Runnable() {
-                @Override
-                public void run() {
-                    final long currentTime = SystemClock.elapsedRealtime();
-                    final int currentProgress = mUploadInfo.getProgress();
-                    if (HttpLifecycleManager.isLifecycleActive(mLifecycleOwner)) {
-                        if (currentTime - lastRefreshTime >= mRefreshTime && currentProgress != lastProgress) {//避免短时间内的频繁回调和相同进度重复回调
+            final double currentProgress = mUploadInfo.getPreciseProgress();
+            if (currentProgress != lastProgress) {//避免短时间内的频繁回调和相同进度重复回调
+                QuickUtils.runOnUiThread(mListener != null, new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mBindLife) {
+                            if (HttpLifecycleManager.isLifecycleActive(mLifecycleOwner)) {
+                                mListener.onProgress(mUploadInfo);
+                            }
+                        } else {
                             mListener.onProgress(mUploadInfo);
                         }
                     }
-                    lastRefreshTime = currentTime;
-                    lastProgress = currentProgress;
-                    QuickLogUtils.i("UploadCallback>>>" +
-                            "总字节：" + mTotalByte +
-                            " 已上传字节：" + mUploadByte +
-                            " 上传进度：" + currentProgress + "%");
-                }
-            });
+                });
+                lastProgress = currentProgress;
+                QuickLogUtils.i("UploadCallback>>>上传中：" + mUploadInfo.toString());
+            }
         }
     }
 

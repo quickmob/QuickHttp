@@ -1,7 +1,5 @@
 package com.lookballs.http.core.request;
 
-import androidx.lifecycle.LifecycleOwner;
-
 import com.lookballs.http.core.model.HttpMethod;
 
 /**
@@ -9,12 +7,12 @@ import com.lookballs.http.core.model.HttpMethod;
  */
 public class DeleteRequest extends BodyRequest<DeleteRequest> {
 
-    private DeleteRequest(LifecycleOwner lifecycleOwner) {
-        super(lifecycleOwner);
+    private DeleteRequest(String url) {
+        super(url);
     }
 
-    public static DeleteRequest with(LifecycleOwner lifecycleOwner) {
-        return new DeleteRequest(lifecycleOwner);
+    public static DeleteRequest with(String url) {
+        return new DeleteRequest(url);
     }
 
     @Override

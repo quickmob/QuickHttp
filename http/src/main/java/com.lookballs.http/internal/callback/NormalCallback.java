@@ -4,12 +4,15 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.lookballs.http.QuickHttp;
 import com.lookballs.http.core.converter.IDataConverter;
+import com.lookballs.http.core.exception.NullBodyException;
+import com.lookballs.http.core.exception.ResponseException;
 import com.lookballs.http.core.lifecycle.HttpLifecycleManager;
 import com.lookballs.http.core.model.HttpCall;
 import com.lookballs.http.internal.GsonPreconditions;
 import com.lookballs.http.internal.GsonTypes;
 import com.lookballs.http.listener.OnHttpListener;
 import com.lookballs.http.listener.OnRetryConditionListener;
+import com.lookballs.http.utils.QuickLogUtils;
 import com.lookballs.http.utils.QuickUtils;
 
 import java.lang.reflect.Type;
@@ -25,12 +28,12 @@ public final class NormalCallback extends BaseCallback {
     private final Class mClazz;//需要转换成数据的类
     private final IDataConverter mDataConverter;//数据转换器
 
-    public NormalCallback(LifecycleOwner lifecycleOwner, HttpCall call, int retryCount, long retryDelayMillis, OnRetryConditionListener onRetryConditionListener, OnHttpListener listener, IDataConverter dataConverter) {
-        this(lifecycleOwner, call, retryCount, retryDelayMillis, onRetryConditionListener, listener, null, dataConverter);
+    public NormalCallback(LifecycleOwner lifecycleOwner, boolean isBindLife, HttpCall call, int retryCount, long retryDelayMillis, OnRetryConditionListener onRetryConditionListener, OnHttpListener listener, IDataConverter dataConverter) {
+        this(lifecycleOwner, isBindLife, call, retryCount, retryDelayMillis, onRetryConditionListener, listener, null, dataConverter);
     }
 
-    public NormalCallback(LifecycleOwner lifecycleOwner, HttpCall call, int retryCount, long retryDelayMillis, OnRetryConditionListener onRetryConditionListener, OnHttpListener listener, Class clazz, IDataConverter dataConverter) {
-        super(lifecycleOwner, call, retryCount, retryDelayMillis, onRetryConditionListener);
+    public NormalCallback(LifecycleOwner lifecycleOwner, boolean isBindLife, HttpCall call, int retryCount, long retryDelayMillis, OnRetryConditionListener onRetryConditionListener, OnHttpListener listener, Class clazz, IDataConverter dataConverter) {
+        super(lifecycleOwner, isBindLife, call, retryCount, retryDelayMillis, onRetryConditionListener);
         mListener = listener;
         mClazz = clazz;
         mDataConverter = dataConverter;
@@ -38,7 +41,11 @@ public final class NormalCallback extends BaseCallback {
         QuickUtils.runOnUiThread(mListener != null, new Runnable() {
             @Override
             public void run() {
-                if (HttpLifecycleManager.isLifecycleActive(getLifecycleOwner())) {
+                if (isBindLife()) {
+                    if (HttpLifecycleManager.isLifecycleActive(getLifecycleOwner())) {
+                        mListener.onStart(getCall());
+                    }
+                } else {
                     mListener.onStart(getCall());
                 }
             }
@@ -47,11 +54,17 @@ public final class NormalCallback extends BaseCallback {
 
     @Override
     protected void onResponse(final Response response) throws Exception {
-        if (response.isSuccessful()) {
-            onSucceed(response);
-        } else {
-            onFail(response.code(), new Exception(response.message()));
+        if (response.body() == null) {
+            throw new NullBodyException("The response body == null");
         }
+        if (!response.isSuccessful()) {
+            throw new ResponseException("response is unsuccessful，code：" + response.code() + "，message：" + response.message(), response);
+        }
+
+        //打印请求耗时时间
+        QuickLogUtils.i("RequestTimeConsuming：" + (response.receivedResponseAtMillis() - response.sentRequestAtMillis()) + "ms");
+
+        onSucceed(response);
     }
 
     private void onSucceed(final Response response) throws Exception {
@@ -72,7 +85,12 @@ public final class NormalCallback extends BaseCallback {
         QuickUtils.runOnUiThread(mListener != null, new Runnable() {
             @Override
             public void run() {
-                if (HttpLifecycleManager.isLifecycleActive(getLifecycleOwner())) {
+                if (isBindLife()) {
+                    if (HttpLifecycleManager.isLifecycleActive(getLifecycleOwner())) {
+                        mListener.onSucceed(finalResult);
+                        mListener.onEnd(getCall());
+                    }
+                } else {
                     mListener.onSucceed(finalResult);
                     mListener.onEnd(getCall());
                 }
@@ -96,7 +114,12 @@ public final class NormalCallback extends BaseCallback {
         QuickUtils.runOnUiThread(mListener != null, new Runnable() {
             @Override
             public void run() {
-                if (HttpLifecycleManager.isLifecycleActive(getLifecycleOwner())) {
+                if (isBindLife()) {
+                    if (HttpLifecycleManager.isLifecycleActive(getLifecycleOwner())) {
+                        mListener.onError(code, finalException);
+                        mListener.onEnd(getCall());
+                    }
+                } else {
                     mListener.onError(code, finalException);
                     mListener.onEnd(getCall());
                 }

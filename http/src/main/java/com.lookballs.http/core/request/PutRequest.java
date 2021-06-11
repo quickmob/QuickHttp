@@ -1,7 +1,5 @@
 package com.lookballs.http.core.request;
 
-import androidx.lifecycle.LifecycleOwner;
-
 import com.lookballs.http.core.model.HttpMethod;
 
 /**
@@ -9,12 +7,12 @@ import com.lookballs.http.core.model.HttpMethod;
  */
 public class PutRequest extends BodyRequest<PutRequest> {
 
-    private PutRequest(LifecycleOwner lifecycleOwner) {
-        super(lifecycleOwner);
+    private PutRequest(String url) {
+        super(url);
     }
 
-    public static PutRequest with(LifecycleOwner lifecycleOwner) {
-        return new PutRequest(lifecycleOwner);
+    public static PutRequest with(String url) {
+        return new PutRequest(url);
     }
 
     @Override

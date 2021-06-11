@@ -9,7 +9,6 @@ public final class UploadInfo {
 
     private long mTotalLength;//总字节数
     private long mUploadLength;//已上传字节数
-    private long mRefreshTime;//上传回调进度刷新时间
 
     public long getTotalLength() {
         return mTotalLength;
@@ -27,14 +26,6 @@ public final class UploadInfo {
         this.mUploadLength = uploadLength;
     }
 
-    public long getRefreshTime() {
-        return mRefreshTime;
-    }
-
-    public void setRefreshTime(long refreshTime) {
-        this.mRefreshTime = refreshTime;
-    }
-
     public int getProgress() {
         int progress = QuickUtils.getProgress(getTotalLength(), getUploadLength());
         if (progress < 0) {
@@ -45,13 +36,28 @@ public final class UploadInfo {
         return progress;
     }
 
+    public double getPreciseProgress() {
+        double progress = QuickUtils.getPreciseProgress(getTotalLength(), getUploadLength());
+        if (progress < 0.00) {
+            return 0.00;
+        } else if (progress > 100.00) {
+            return 100.00;
+        }
+        return progress;
+    }
+
+    public String getTextPreciseProgress() {
+        //如果最后一位小数是0时，double值会默认将0去掉，这里将0补齐
+        return String.format("%.2f", getPreciseProgress());
+    }
+
     @Override
     public String toString() {
         return "UploadInfo{" +
-                "mTotalLength=" + mTotalLength +
-                ", progress=" + getProgress() +
+                "progress=" + getProgress() +
+                ", preciseProgress=" + getPreciseProgress() +
+                ", mTotalLength=" + mTotalLength +
                 ", mUploadLength=" + mUploadLength +
-                ", mRefreshTime=" + mRefreshTime +
                 '}';
     }
 }

@@ -1,7 +1,5 @@
 package com.lookballs.http.core.request;
 
-import androidx.lifecycle.LifecycleOwner;
-
 import com.lookballs.http.core.model.HttpMethod;
 
 /**
@@ -9,12 +7,12 @@ import com.lookballs.http.core.model.HttpMethod;
  */
 public class PostRequest extends BodyRequest<PostRequest> {
 
-    private PostRequest(LifecycleOwner lifecycleOwner) {
-        super(lifecycleOwner);
+    private PostRequest(String url) {
+        super(url);
     }
 
-    public static PostRequest with(LifecycleOwner lifecycleOwner) {
-        return new PostRequest(lifecycleOwner);
+    public static PostRequest with(String url) {
+        return new PostRequest(url);
     }
 
     @Override

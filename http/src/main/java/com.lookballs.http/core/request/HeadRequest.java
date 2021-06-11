@@ -1,7 +1,5 @@
 package com.lookballs.http.core.request;
 
-import androidx.lifecycle.LifecycleOwner;
-
 import com.lookballs.http.core.model.HttpMethod;
 
 /**
@@ -9,12 +7,12 @@ import com.lookballs.http.core.model.HttpMethod;
  */
 public class HeadRequest extends UrlRequest<HeadRequest> {
 
-    private HeadRequest(LifecycleOwner lifecycleOwner) {
-        super(lifecycleOwner);
+    private HeadRequest(String url) {
+        super(url);
     }
 
-    public static HeadRequest with(LifecycleOwner lifecycleOwner) {
-        return new HeadRequest(lifecycleOwner);
+    public static HeadRequest with(String url) {
+        return new HeadRequest(url);
     }
 
     @Override

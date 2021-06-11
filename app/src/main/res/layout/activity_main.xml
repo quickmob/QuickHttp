@@ -95,13 +95,28 @@
                 android:onClick="uploadMoreRequest"
                 android:text="上传多文件请求" />
 
-            <ProgressBar
-                android:id="@+id/downloadProgress"
-                style="?android:attr/progressBarStyleHorizontal"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:max="100"
-                android:visibility="gone" />
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp">
+
+                <ProgressBar
+                    android:id="@+id/downloadProgress"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="60dp"
+                    android:max="100" />
+
+                <TextView
+                    android:id="@+id/tv_progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center|right"
+                    android:text="0%" />
+            </FrameLayout>
 
             <Button
                 android:layout_width="match_parent"
@@ -121,13 +136,28 @@
                 android:onClick="download1Request"
                 android:text="文件下载一" />
 
-            <ProgressBar
-                android:id="@+id/downloadProgress1"
-                style="?android:attr/progressBarStyleHorizontal"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:max="100"
-                android:visibility="gone" />
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp">
+
+                <ProgressBar
+                    android:id="@+id/downloadProgress1"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="60dp"
+                    android:max="100" />
+
+                <TextView
+                    android:id="@+id/tv_progress1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center|right"
+                    android:text="0%" />
+            </FrameLayout>
 
             <Button
                 android:layout_width="match_parent"
@@ -135,13 +165,28 @@
                 android:onClick="download2Request"
                 android:text="文件下载二" />
 
-            <ProgressBar
-                android:id="@+id/downloadProgress2"
-                style="?android:attr/progressBarStyleHorizontal"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:max="100"
-                android:visibility="gone" />
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp">
+
+                <ProgressBar
+                    android:id="@+id/downloadProgress2"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="60dp"
+                    android:max="100" />
+
+                <TextView
+                    android:id="@+id/tv_progress2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center|right"
+                    android:text="0%" />
+            </FrameLayout>
 
             <Button
                 android:layout_width="match_parent"

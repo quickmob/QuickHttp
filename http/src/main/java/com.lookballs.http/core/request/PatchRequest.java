@@ -1,7 +1,5 @@
 package com.lookballs.http.core.request;
 
-import androidx.lifecycle.LifecycleOwner;
-
 import com.lookballs.http.core.model.HttpMethod;
 
 /**
@@ -9,12 +7,12 @@ import com.lookballs.http.core.model.HttpMethod;
  */
 public class PatchRequest extends BodyRequest<PatchRequest> {
 
-    private PatchRequest(LifecycleOwner lifecycleOwner) {
-        super(lifecycleOwner);
+    private PatchRequest(String url) {
+        super(url);
     }
 
-    public static PatchRequest with(LifecycleOwner lifecycleOwner) {
-        return new PatchRequest(lifecycleOwner);
+    public static PatchRequest with(String url) {
+        return new PatchRequest(url);
     }
 
     @Override

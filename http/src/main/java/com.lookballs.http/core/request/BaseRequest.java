@@ -31,6 +31,7 @@ import okhttp3.Response;
 public abstract class BaseRequest<T extends BaseRequest> {
 
     protected LifecycleOwner mLifecycleOwner;//生命周期控制对象
+    protected boolean mBindLife;//是否绑定生命周期
     protected Object mTag;//请求tag
     protected String mUrl;//请求url
     protected HttpHeaders mHeaders;//请求头
@@ -54,9 +55,27 @@ public abstract class BaseRequest<T extends BaseRequest> {
     protected TimeUnit mReadTimeoutUnit = TimeUnit.MILLISECONDS;//读取超时的时间单位
     protected TimeUnit mWriteTimeoutUnit = TimeUnit.MILLISECONDS;//写超时的时间单位
 
-    public BaseRequest(LifecycleOwner lifecycleOwner) {
+    //设置请求url
+    public BaseRequest(String url) {
+        mUrl = url;
+    }
+
+    /**
+     * 绑定生命周期
+     *
+     * @param lifecycleOwner 有生命周期的对象（例如AppCompatActivity、FragmentActivity、Fragment等）
+     *                       如需传入其他对象请参考以下两个类
+     *                       {@link com.lookballs.http.core.lifecycle.ActivityLifecycle}
+     *                       {@link com.lookballs.http.core.lifecycle.ApplicationLifecycle}
+     * @return
+     */
+    public T bindLife(LifecycleOwner lifecycleOwner) {
         mLifecycleOwner = lifecycleOwner;
-        tag(lifecycleOwner);
+        if (mLifecycleOwner != null) {
+            mBindLife = true;
+            tag(lifecycleOwner);
+        }
+        return (T) this;
     }
 
     //设置OkHttpClient
@@ -121,12 +140,6 @@ public abstract class BaseRequest<T extends BaseRequest> {
         }
         mWriteTimeout = writeTimeout;
         mWriteTimeoutUnit = unit;
-        return (T) this;
-    }
-
-    //设置请求url
-    public T url(String url) {
-        mUrl = url;
         return (T) this;
     }
 
@@ -204,13 +217,13 @@ public abstract class BaseRequest<T extends BaseRequest> {
     //开始异步请求
     public void async(OnHttpListener listener) {
         mHttpCall = new HttpCall(createCall());
-        mHttpCall.enqueue(new NormalCallback(getLifecycleOwner(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, listener, mDataConverter));
+        mHttpCall.enqueue(new NormalCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, listener, mDataConverter));
     }
 
     //开始异步请求
     public <B> void async(Class<B> clazz, OnHttpListener listener) {
         mHttpCall = new HttpCall(createCall());
-        mHttpCall.enqueue(new NormalCallback(getLifecycleOwner(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, listener, clazz, mDataConverter));
+        mHttpCall.enqueue(new NormalCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, listener, clazz, mDataConverter));
     }
 
     //创建OkHttpClient
@@ -282,6 +295,11 @@ public abstract class BaseRequest<T extends BaseRequest> {
     //获取LifecycleOwner
     protected LifecycleOwner getLifecycleOwner() {
         return mLifecycleOwner;
+    }
+
+    //是否绑定生命周期
+    protected boolean isBindLife() {
+        return mBindLife;
     }
 
     //打印参数

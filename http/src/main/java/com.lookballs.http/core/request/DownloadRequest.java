@@ -1,7 +1,5 @@
 package com.lookballs.http.core.request;
 
-import androidx.lifecycle.LifecycleOwner;
-
 import com.lookballs.http.core.model.BodyType;
 import com.lookballs.http.core.model.HttpCall;
 import com.lookballs.http.core.model.HttpHeaders;
@@ -11,6 +9,7 @@ import com.lookballs.http.core.model.HttpUrlParams;
 import com.lookballs.http.internal.callback.DownloadCallback;
 import com.lookballs.http.listener.OnDownloadListener;
 import com.lookballs.http.listener.OnHttpListener;
+import com.lookballs.http.utils.QuickUtils;
 
 import java.io.File;
 
@@ -28,12 +27,12 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
     private long mBreakpointLength = 0;//断点续传下载起始位置
     private boolean mIsBreakpoint = false;//是否开启断点续传下载
 
-    private DownloadRequest(LifecycleOwner lifecycleOwner) {
-        super(lifecycleOwner);
+    private DownloadRequest(String url) {
+        super(url);
     }
 
-    public static DownloadRequest with(LifecycleOwner lifecycleOwner) {
-        return new DownloadRequest(lifecycleOwner);
+    public static DownloadRequest with(String url) {
+        return new DownloadRequest(url);
     }
 
     //设置请求方式
@@ -84,7 +83,7 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
     //开始下载请求
     public void start(OnDownloadListener listener) {
         mHttpCall = new HttpCall(createCall());
-        mHttpCall.enqueue(new DownloadCallback(getLifecycleOwner(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, mFilePath, mMD5, mRefreshTime, mBreakpointLength, mIsBreakpoint, listener));
+        mHttpCall.enqueue(new DownloadCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, mFilePath, mMD5, mRefreshTime, mBreakpointLength, mIsBreakpoint, listener));
     }
 
     @Override
@@ -107,21 +106,21 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
     protected Request createRequest(String url, Object tag, HttpHeaders headers, HttpUrlParams urlParams, HttpParams params, BodyType bodyType) {
         if (mIsBreakpoint) {
             //设置断点续传
-            headers.put("RANGE", "bytes=" + mBreakpointLength + "-");
+            QuickUtils.setRangeHeader(headers, mBreakpointLength);
         }
         switch (mMethod) {
             case HEAD:
-                return HeadRequest.with(getLifecycleOwner()).createRequest(url, tag, headers, urlParams, params, bodyType);
+                return HeadRequest.with(url).createRequest(url, tag, headers, urlParams, params, bodyType);
             case POST:
-                return PostRequest.with(getLifecycleOwner()).createRequest(url, tag, headers, urlParams, params, bodyType);
+                return PostRequest.with(url).createRequest(url, tag, headers, urlParams, params, bodyType);
             case DELETE:
-                return DeleteRequest.with(getLifecycleOwner()).createRequest(url, tag, headers, urlParams, params, bodyType);
+                return DeleteRequest.with(url).createRequest(url, tag, headers, urlParams, params, bodyType);
             case PATCH:
-                return PatchRequest.with(getLifecycleOwner()).createRequest(url, tag, headers, urlParams, params, bodyType);
+                return PatchRequest.with(url).createRequest(url, tag, headers, urlParams, params, bodyType);
             case PUT:
-                return PutRequest.with(getLifecycleOwner()).createRequest(url, tag, headers, urlParams, params, bodyType);
+                return PutRequest.with(url).createRequest(url, tag, headers, urlParams, params, bodyType);
             default:
-                return GetRequest.with(getLifecycleOwner()).createRequest(url, tag, headers, urlParams, params, bodyType);
+                return GetRequest.with(url).createRequest(url, tag, headers, urlParams, params, bodyType);
         }
     }
 
