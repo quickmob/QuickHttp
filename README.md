@@ -28,7 +28,7 @@ android {
 }
 
 dependencies {
-    //框架依赖：其中latest.release指代最新版本号，也可以指定明确的版本号，例如1.0.1
+    //框架依赖：其中latest.release指代最新版本号，也可以指定明确的版本号
     implementation 'com.github.quickmob:QuickHttp:latest.release'
     //okhttp3依赖
     implementation 'com.squareup.okhttp3:okhttp:3.12.13'
