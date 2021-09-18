@@ -27,19 +27,19 @@ import com.lookballs.app.http.http.converter.GsonDataConverter;
 import com.lookballs.app.http.util.gson.GsonUtil;
 import com.lookballs.http.QuickHttp;
 import com.lookballs.http.core.lifecycle.ApplicationLifecycle;
+import com.lookballs.http.core.listener.OnDownloadListener;
+import com.lookballs.http.core.listener.OnHttpListener;
+import com.lookballs.http.core.listener.OnUploadListener;
 import com.lookballs.http.core.model.DownloadInfo;
-import com.lookballs.http.core.model.HttpParams;
-import com.lookballs.http.core.model.HttpUrlParams;
 import com.lookballs.http.core.model.UploadInfo;
-import com.lookballs.http.listener.OnDownloadListener;
-import com.lookballs.http.listener.OnHttpListener;
-import com.lookballs.http.listener.OnUploadListener;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Call;
 
@@ -73,7 +73,7 @@ public class MainActivity extends BaseActivity {
     public void get1Request(View view) {
         //方式一：使用泛型类型去解析数据
         //这种方式一定需要在OnHttpListener中指定类型，如果不指定则会报类型错误
-        QuickHttp.get("https://www.wanandroid.com/banner/json")
+        QuickHttp.get("banner/json")
                 .bindLife(MainActivity.this)
                 .async(new OnHttpListener<TestBean1<List<BannerBean>>>() {
                     @Override
@@ -101,7 +101,7 @@ public class MainActivity extends BaseActivity {
     public void get2Request(View view) {
         //方式一：使用泛型类型去解析数据
         //这种方式一定需要在OnHttpListener中指定类型，如果不指定则会报类型错误
-        QuickHttp.get("https://www.wanandroid.com/banner/json")
+        QuickHttp.get("banner/json")
                 .async(new OnHttpListener<TestBean2<BannerBean>>() {
                     @Override
                     public void onStart(Call call) {
@@ -128,7 +128,7 @@ public class MainActivity extends BaseActivity {
     public void get3Request(View view) {
         //方式一：使用泛型类型去解析数据
         //这种方式一定需要在OnHttpListener中指定类型，如果不指定则会报类型错误
-        QuickHttp.get("https://www.wanandroid.com/banner/json")
+        QuickHttp.get("banner/json")
                 .async(new OnHttpListener<TestBean3>() {
                     @Override
                     public void onStart(Call call) {
@@ -155,7 +155,7 @@ public class MainActivity extends BaseActivity {
     public void get4Request(View view) {
         //方式二：使用指定类型去解析数据
         //这种方式需要传递指定的XXX.class，OnHttpListener中可指定类型也可不指定类型
-        QuickHttp.get("https://www.wanandroid.com/banner/json")
+        QuickHttp.get("banner/json")
                 .async(TestBean1.class, new OnHttpListener<TestBean1>() {
                     @Override
                     public void onStart(Call call) {
@@ -182,7 +182,7 @@ public class MainActivity extends BaseActivity {
     public void get5Request(View view) {
         //方式二：使用指定类型去解析数据
         //这种方式需要传递指定的XXX.class，OnHttpListener中可指定类型也可不指定类型
-        QuickHttp.get("https://www.wanandroid.com/banner/json")
+        QuickHttp.get("banner/json")
                 .async(TestBean2.class, new OnHttpListener<TestBean2>() {
                     @Override
                     public void onStart(Call call) {
@@ -209,7 +209,7 @@ public class MainActivity extends BaseActivity {
     public void get6Request(View view) {
         //方式二：使用指定类型去解析数据
         //这种方式需要传递指定的XXX.class，OnHttpListener中可指定类型也可不指定类型
-        QuickHttp.get("https://www.wanandroid.com/banner/json")
+        QuickHttp.get("banner/json")
                 .async(TestBean3.class, new OnHttpListener<TestBean3>() {
                     @Override
                     public void onStart(Call call) {
@@ -236,10 +236,8 @@ public class MainActivity extends BaseActivity {
     /***********************************请求参数***********************************/
 
     public void getRequest(View view) {
-        HttpUrlParams urlParams = new HttpUrlParams();
-        urlParams.put("author", "鸿洋");
-        QuickHttp.get("https://wanandroid.com/article/list/0/json")
-                .urlParams(urlParams)
+        QuickHttp.get("article/list/0/json")
+                .addUrlParam("author", "鸿洋")
                 .dataConverter(new GsonDataConverter())
                 .async(Object.class, new CustomHttpCallback(this) {
                     @Override
@@ -250,11 +248,9 @@ public class MainActivity extends BaseActivity {
     }
 
     public void postRequest(View view) {
-        HttpParams httpParams = new HttpParams();
-        httpParams.put("username", "lookballs");
-        httpParams.put("password", "lookballs");
-        QuickHttp.post("https://www.wanandroid.com/user/login")
-                .params(httpParams)
+        QuickHttp.post("user/login")
+                .addParam("username", "lookballs")
+                .addParam("password", "lookballs")
                 .async(new CustomHttpCallback<BaseBean>(this) {
                     @Override
                     public void onSucceed(BaseBean result) {
@@ -275,11 +271,9 @@ public class MainActivity extends BaseActivity {
                 });
 
                 try {
-                    HttpParams httpParams = new HttpParams();
-                    httpParams.put("username", "lookballs");
-                    httpParams.put("password", "lookballs");
-                    BaseBean baseBean = QuickHttp.post("https://www.wanandroid.com/user/login")
-                            .params(httpParams)
+                    BaseBean baseBean = QuickHttp.post("user/login")
+                            .addParam("username", "lookballs")
+                            .addParam("password", "lookballs")
                             .sync(BaseBean.class);
                     ToastUtils.showShort("请求结果" + GsonUtil.toJson(baseBean));
                 } catch (Exception e) {
@@ -303,10 +297,8 @@ public class MainActivity extends BaseActivity {
             drawableToFile(ContextCompat.getDrawable(this, R.drawable.bg), file);
         }
 
-        HttpParams httpParams = new HttpParams();
-        httpParams.put("image", file);
         QuickHttp.post("https://graph.baidu.com/upload/")
-                .params(httpParams)
+                .addParam("image", file)
                 .async(UploadBean.class, new OnUploadListener<UploadBean>() {
                     @Override
                     public void onStart(Call call) {
@@ -350,15 +342,15 @@ public class MainActivity extends BaseActivity {
         for (int i = 0; i < 3; i++) {
             files.add(file);
         }
-        HttpParams httpParams = new HttpParams();
+        Map<String, Object> params = new HashMap<>();
+        params.put("type", 6);
+        //params.put("files", files);
         for (int i = 0; i < files.size(); i++) {
-            httpParams.put("files" + "[" + i + "]", files.get(i));
+            params.put("files" + "[" + i + "]", files.get(i));
         }
-        //httpParams.put("files", files);
 
-        httpParams.put("type", 6);
         QuickHttp.post("http://xxxx/v1/upload/files")
-                .params(httpParams)
+                .addParam(params)
                 .async(UploadFilesBean.class, new OnUploadListener<UploadFilesBean>() {
                     @Override
                     public void onStart(Call call) {
@@ -525,5 +517,4 @@ public class MainActivity extends BaseActivity {
             e.printStackTrace();
         }
     }
-
 }

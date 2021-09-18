@@ -1,8 +1,8 @@
-package com.lookballs.http.internal.body;
+package com.lookballs.http.core.body;
 
 import androidx.annotation.NonNull;
 
-import com.lookballs.http.core.model.ContentType;
+import com.lookballs.http.core.ContentType;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

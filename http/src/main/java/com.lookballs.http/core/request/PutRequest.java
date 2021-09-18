@@ -1,11 +1,11 @@
 package com.lookballs.http.core.request;
 
-import com.lookballs.http.core.model.HttpMethod;
+import com.lookballs.http.internal.define.HttpMethod;
 
 /**
  * put请求
  */
-public class PutRequest extends BodyRequest<PutRequest> {
+public class PutRequest extends BaseBodyRequest<PutRequest> {
 
     private PutRequest(String url) {
         super(url);

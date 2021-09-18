@@ -1,6 +1,6 @@
 package com.lookballs.app.http.http;
 
-import com.lookballs.http.listener.OnHttpListener;
+import com.lookballs.http.core.listener.OnHttpListener;
 
 import okhttp3.Call;
 

@@ -1,6 +1,6 @@
 package com.lookballs.app.http.http;
 
-import com.lookballs.http.utils.HttpsUtils;
+import com.lookballs.http.core.utils.HttpsUtils;
 
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;

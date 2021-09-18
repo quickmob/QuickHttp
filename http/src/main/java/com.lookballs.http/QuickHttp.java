@@ -2,7 +2,6 @@ package com.lookballs.http;
 
 import androidx.lifecycle.LifecycleOwner;
 
-import com.lookballs.http.config.HttpConfig;
 import com.lookballs.http.core.request.DeleteRequest;
 import com.lookballs.http.core.request.DownloadRequest;
 import com.lookballs.http.core.request.GetRequest;

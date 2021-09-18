@@ -1,4 +1,4 @@
-package com.lookballs.http.core.model;
+package com.lookballs.http.core;
 
 /**
  * 参数提交方式

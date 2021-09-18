@@ -1,12 +1,14 @@
 package com.lookballs.http.internal.body;
 
+import android.os.SystemClock;
+
 import androidx.lifecycle.LifecycleOwner;
 
 import com.lookballs.http.core.lifecycle.HttpLifecycleManager;
+import com.lookballs.http.core.listener.OnUploadListener;
 import com.lookballs.http.core.model.UploadInfo;
-import com.lookballs.http.listener.OnUploadListener;
-import com.lookballs.http.utils.QuickLogUtils;
-import com.lookballs.http.utils.QuickUtils;
+import com.lookballs.http.core.utils.QuickLogUtils;
+import com.lookballs.http.core.utils.QuickUtils;
 
 import java.io.IOException;
 
@@ -27,17 +29,20 @@ public final class ProgressBody extends RequestBody {
     private final UploadInfo mUploadInfo;//上传进度信息
     private final LifecycleOwner mLifecycleOwner;//LifecycleOwner
     private final boolean mBindLife;//是否绑定生命周期
+    private final long mRefreshTime;//上传回调进度刷新时间，默认10毫秒
     private final OnUploadListener mListener;//上传回调
 
     private long mTotalByte;//总字节数
     private long mUploadByte;//已上传字节数
     private double lastProgress;//最后一次刷新的进度
+    private long lastRefreshTime = 0L;//最后一次刷新进度的时间
 
-    public ProgressBody(RequestBody body, LifecycleOwner lifecycleOwner, boolean isBindLife, OnUploadListener listener) {
+    public ProgressBody(RequestBody body, LifecycleOwner lifecycleOwner, boolean isBindLife, long refreshTime, OnUploadListener listener) {
         mRequestBody = body;
         mUploadInfo = new UploadInfo();
         mLifecycleOwner = lifecycleOwner;
         mBindLife = isBindLife;
+        mRefreshTime = refreshTime;
         mListener = listener;
     }
 
@@ -73,8 +78,9 @@ public final class ProgressBody extends RequestBody {
             mUploadByte += byteCount;
             mUploadInfo.setUploadLength(mUploadByte);
 
+            final long currentTime = SystemClock.elapsedRealtime();
             final double currentProgress = mUploadInfo.getPreciseProgress();
-            if (currentProgress != lastProgress) {//避免短时间内的频繁回调和相同进度重复回调
+            if (currentTime - lastRefreshTime >= mRefreshTime && currentProgress != lastProgress) {//避免短时间内的频繁回调和相同进度重复回调
                 QuickUtils.runOnUiThread(mListener != null, new Runnable() {
                     @Override
                     public void run() {
@@ -87,6 +93,7 @@ public final class ProgressBody extends RequestBody {
                         }
                     }
                 });
+                lastRefreshTime = currentTime;
                 lastProgress = currentProgress;
                 QuickLogUtils.i("UploadCallback>>>上传中：" + mUploadInfo.toString());
             }

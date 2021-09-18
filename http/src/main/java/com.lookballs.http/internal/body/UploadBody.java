@@ -1,7 +1,7 @@
 package com.lookballs.http.internal.body;
 
-import com.lookballs.http.core.model.ContentType;
-import com.lookballs.http.utils.QuickUtils;
+import com.lookballs.http.core.ContentType;
+import com.lookballs.http.core.utils.QuickUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;

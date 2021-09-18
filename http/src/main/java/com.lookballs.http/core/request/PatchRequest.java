@@ -1,11 +1,11 @@
 package com.lookballs.http.core.request;
 
-import com.lookballs.http.core.model.HttpMethod;
+import com.lookballs.http.internal.define.HttpMethod;
 
 /**
  * patch请求
  */
-public class PatchRequest extends BodyRequest<PatchRequest> {
+public class PatchRequest extends BaseBodyRequest<PatchRequest> {
 
     private PatchRequest(String url) {
         super(url);

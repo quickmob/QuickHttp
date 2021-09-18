@@ -1,8 +1,8 @@
-package com.lookballs.http.internal.body;
+package com.lookballs.http.core.body;
 
 import androidx.annotation.NonNull;
 
-import com.lookballs.http.core.model.ContentType;
+import com.lookballs.http.core.ContentType;
 
 import java.io.IOException;
 
@@ -13,16 +13,16 @@ import okio.BufferedSink;
 /**
  * 文本参数提交
  */
-public class TextPlainBody extends RequestBody {
+public class TextBody extends RequestBody {
 
     private final String mText;//字符串数据
     private final byte[] mBytes;//字节数组
 
-    public TextPlainBody() {
+    public TextBody() {
         this("");
     }
 
-    public TextPlainBody(String text) {
+    public TextBody(String text) {
         mText = text;
         mBytes = mText.getBytes();
     }

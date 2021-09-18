@@ -1,11 +1,11 @@
 package com.lookballs.http.core.request;
 
-import com.lookballs.http.core.model.HttpMethod;
+import com.lookballs.http.internal.define.HttpMethod;
 
 /**
  * get请求
  */
-public class GetRequest extends UrlRequest<GetRequest> {
+public class GetRequest extends BaseUrlRequest<GetRequest> {
 
     private GetRequest(String url) {
         super(url);

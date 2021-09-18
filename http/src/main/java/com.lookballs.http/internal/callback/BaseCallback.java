@@ -4,10 +4,10 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.lookballs.http.QuickHttp;
 import com.lookballs.http.core.lifecycle.HttpLifecycleManager;
-import com.lookballs.http.core.model.HttpCall;
-import com.lookballs.http.listener.OnRetryConditionListener;
-import com.lookballs.http.utils.QuickLogUtils;
-import com.lookballs.http.utils.QuickUtils;
+import com.lookballs.http.internal.define.HttpCall;
+import com.lookballs.http.core.listener.OnRetryConditionListener;
+import com.lookballs.http.core.utils.QuickLogUtils;
+import com.lookballs.http.core.utils.QuickUtils;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;

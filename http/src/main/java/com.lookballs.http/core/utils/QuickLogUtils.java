@@ -1,4 +1,4 @@
-package com.lookballs.http.utils;
+package com.lookballs.http.core.utils;
 
 import android.text.TextUtils;
 import android.util.Log;

@@ -1,4 +1,4 @@
-package com.lookballs.http.utils;
+package com.lookballs.http.core.utils;
 
 import android.app.Activity;
 import android.app.Application;
@@ -9,9 +9,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
-import com.lookballs.http.core.model.ContentType;
-import com.lookballs.http.core.model.HttpHeaders;
-import com.lookballs.http.core.model.HttpUrlParams;
+import com.lookballs.http.core.ContentType;
+import com.lookballs.http.internal.define.HttpHeaders;
+import com.lookballs.http.internal.define.HttpUrlParams;
 import com.lookballs.http.internal.GsonPreconditions;
 import com.lookballs.http.internal.GsonTypes;
 import com.lookballs.http.internal.body.UploadBody;
@@ -435,5 +435,23 @@ public class QuickUtils {
      */
     public static String getContentMD5(Response response) {
         return response.header("Content-MD5");
+    }
+
+    /**
+     * 判断url中是否包含http:或者https:
+     *
+     * @return
+     */
+    public static boolean checkHttpUrl(String url) {
+        if (!TextUtils.isEmpty(url)) {
+            if (url.regionMatches(true, 0, "https:", 0, 6)) {
+                return true;
+            } else if (url.regionMatches(true, 0, "http:", 0, 5)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
 }

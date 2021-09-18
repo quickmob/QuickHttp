@@ -6,7 +6,7 @@ import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.lookballs.http.QuickHttp;
-import com.lookballs.http.utils.QuickLogUtils;
+import com.lookballs.http.core.utils.QuickLogUtils;
 
 /**
  * 请求生命周期控制

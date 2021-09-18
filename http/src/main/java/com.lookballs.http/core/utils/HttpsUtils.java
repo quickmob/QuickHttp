@@ -1,4 +1,4 @@
-package com.lookballs.http.utils;
+package com.lookballs.http.core.utils;
 
 import java.io.InputStream;
 import java.security.KeyStore;

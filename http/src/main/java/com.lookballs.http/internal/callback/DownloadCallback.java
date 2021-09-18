@@ -9,12 +9,12 @@ import com.lookballs.http.core.exception.MD5Exception;
 import com.lookballs.http.core.exception.NullBodyException;
 import com.lookballs.http.core.exception.ResponseException;
 import com.lookballs.http.core.lifecycle.HttpLifecycleManager;
+import com.lookballs.http.core.listener.OnDownloadListener;
+import com.lookballs.http.core.listener.OnRetryConditionListener;
 import com.lookballs.http.core.model.DownloadInfo;
-import com.lookballs.http.core.model.HttpCall;
-import com.lookballs.http.listener.OnDownloadListener;
-import com.lookballs.http.listener.OnRetryConditionListener;
-import com.lookballs.http.utils.QuickLogUtils;
-import com.lookballs.http.utils.QuickUtils;
+import com.lookballs.http.core.utils.QuickLogUtils;
+import com.lookballs.http.core.utils.QuickUtils;
+import com.lookballs.http.internal.define.HttpCall;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,7 +33,7 @@ public final class DownloadCallback extends BaseCallback {
     private final DownloadInfo mDownloadInfo;//下载任务
     private final File mFile;//保存的文件
     private final boolean mIsBreakpoint;//是否开启断点续传下载
-    private final long mRefreshTime;//下载回调进度刷新时间
+    private final long mRefreshTime;//下载回调进度刷新时间，默认100毫秒
     private final long mBreakpointLength;//断点续传下载起始位置
     private final OnDownloadListener mListener;//下载监听回调
 

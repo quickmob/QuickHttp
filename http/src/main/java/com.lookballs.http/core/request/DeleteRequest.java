@@ -1,11 +1,11 @@
 package com.lookballs.http.core.request;
 
-import com.lookballs.http.core.model.HttpMethod;
+import com.lookballs.http.internal.define.HttpMethod;
 
 /**
  * delete请求
  */
-public class DeleteRequest extends BodyRequest<DeleteRequest> {
+public class DeleteRequest extends BaseBodyRequest<DeleteRequest> {
 
     private DeleteRequest(String url) {
         super(url);

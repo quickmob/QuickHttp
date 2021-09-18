@@ -1,6 +1,6 @@
-package com.lookballs.http.core.model;
+package com.lookballs.http.internal.define;
 
-import com.lookballs.http.utils.QuickUtils;
+import com.lookballs.http.core.utils.QuickUtils;
 
 import java.util.HashMap;
 import java.util.Map;

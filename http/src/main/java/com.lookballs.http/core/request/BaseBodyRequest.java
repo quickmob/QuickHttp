@@ -1,16 +1,16 @@
 package com.lookballs.http.core.request;
 
-import com.lookballs.http.core.model.BodyType;
-import com.lookballs.http.core.model.HttpHeaders;
-import com.lookballs.http.core.model.HttpParams;
-import com.lookballs.http.core.model.HttpUrlParams;
-import com.lookballs.http.internal.body.JsonBody;
+import com.lookballs.http.core.BodyType;
+import com.lookballs.http.core.body.JsonBody;
+import com.lookballs.http.core.body.TextBody;
+import com.lookballs.http.core.listener.OnHttpListener;
+import com.lookballs.http.core.listener.OnUploadListener;
+import com.lookballs.http.core.utils.QuickUtils;
 import com.lookballs.http.internal.body.ProgressBody;
-import com.lookballs.http.internal.body.TextPlainBody;
 import com.lookballs.http.internal.body.UploadBody;
-import com.lookballs.http.listener.OnHttpListener;
-import com.lookballs.http.listener.OnUploadListener;
-import com.lookballs.http.utils.QuickUtils;
+import com.lookballs.http.internal.define.HttpHeaders;
+import com.lookballs.http.internal.define.HttpParams;
+import com.lookballs.http.internal.define.HttpUrlParams;
 
 import java.io.File;
 import java.io.InputStream;
@@ -25,44 +25,50 @@ import okhttp3.RequestBody;
 /**
  * 带RequestBody的请求
  */
-public abstract class BodyRequest<T extends BodyRequest> extends BaseRequest<T> {
+public abstract class BaseBodyRequest<T extends BaseBodyRequest> extends BaseRequest<T> {
 
     private RequestBody mRequestBody;//RequestBody
-    private long mRefreshTime = 50;//上传回调进度刷新时间，默认50毫秒
+    private long mRefreshTime = 10;//上传回调进度刷新时间，默认10毫秒
     private OnUploadListener mOnUploadListener;//上传回调监听
 
+    //设置请求参数
+    public T addParam(Map<String, Object> params) {
+        if (mParams == null) {
+            mParams = new HttpParams();
+        }
+        mParams.putAll(params);
+        return (T) this;
+    }
+
+    //设置请求参数
+    public T addParam(String key, Object value) {
+        if (mParams == null) {
+            mParams = new HttpParams();
+        }
+        mParams.put(key, value);
+        return (T) this;
+    }
+
     //设置RequestBody
-    public T body(RequestBody body) {
+    public T addBody(RequestBody body) {
         mRequestBody = body;
         return (T) this;
     }
 
-    public T json(Map map) {
-        if (map == null) {
-            return (T) this;
-        }
-        return body(new JsonBody(map));
+    //设置JsonBody
+    public T addJsonBody(JsonBody body) {
+        return addBody(body);
     }
 
-    public T json(List list) {
-        if (list == null) {
-            return (T) this;
-        }
-        return body(new JsonBody(list));
+    //设置TextBody
+    public T addTextBody(TextBody body) {
+        return addBody(body);
     }
 
-    public T json(String json) {
-        if (json == null) {
-            return (T) this;
-        }
-        return body(new JsonBody(json));
-    }
-
-    public T text(String text) {
-        if (text == null) {
-            return (T) this;
-        }
-        return body(new TextPlainBody(text));
+    //设置BodyType
+    public T bodyType(BodyType bodyType) {
+        mBodyType = bodyType;
+        return (T) this;
     }
 
     //设置上传回调进度刷新时间
@@ -87,7 +93,7 @@ public abstract class BodyRequest<T extends BodyRequest> extends BaseRequest<T> 
         super.async(clazz, listener);
     }
 
-    public BodyRequest(String url) {
+    public BaseBodyRequest(String url) {
         super(url);
     }
 
@@ -99,7 +105,7 @@ public abstract class BodyRequest<T extends BodyRequest> extends BaseRequest<T> 
         RequestBody body = mRequestBody != null ? mRequestBody : createRequestBody(params, bodyType);
         requestBuilder.method(getRequestMethod(), body);
 
-        printParam(requestUrl, tag, getRequestMethod(), mRetryCount, headers, urlParams, params);
+        printParam(requestUrl, tag, getRequestMethod(), headers, urlParams, params);
         return requestBuilder.build();
     }
 
@@ -172,7 +178,7 @@ public abstract class BodyRequest<T extends BodyRequest> extends BaseRequest<T> 
             body = formBuilder.build();
         }
         if (mOnUploadListener != null) {
-            return new ProgressBody(body, getLifecycleOwner(), isBindLife(), mOnUploadListener);
+            return new ProgressBody(body, getLifecycleOwner(), isBindLife(), mRefreshTime, mOnUploadListener);
         } else {
             return body;
         }

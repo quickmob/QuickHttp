@@ -7,13 +7,13 @@ import com.lookballs.http.core.converter.IDataConverter;
 import com.lookballs.http.core.exception.NullBodyException;
 import com.lookballs.http.core.exception.ResponseException;
 import com.lookballs.http.core.lifecycle.HttpLifecycleManager;
-import com.lookballs.http.core.model.HttpCall;
+import com.lookballs.http.internal.define.HttpCall;
 import com.lookballs.http.internal.GsonPreconditions;
 import com.lookballs.http.internal.GsonTypes;
-import com.lookballs.http.listener.OnHttpListener;
-import com.lookballs.http.listener.OnRetryConditionListener;
-import com.lookballs.http.utils.QuickLogUtils;
-import com.lookballs.http.utils.QuickUtils;
+import com.lookballs.http.core.listener.OnHttpListener;
+import com.lookballs.http.core.listener.OnRetryConditionListener;
+import com.lookballs.http.core.utils.QuickLogUtils;
+import com.lookballs.http.core.utils.QuickUtils;
 
 import java.lang.reflect.Type;
 

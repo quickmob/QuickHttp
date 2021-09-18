@@ -6,9 +6,9 @@ import android.content.Context;
 import com.lookballs.app.http.http.CustomOkHttpClient;
 import com.lookballs.app.http.http.converter.DataConverter;
 import com.lookballs.http.QuickHttp;
-import com.lookballs.http.config.HttpConfig;
-import com.lookballs.http.listener.AddHeadersListener;
-import com.lookballs.http.listener.OnRetryConditionListener;
+import com.lookballs.http.HttpConfig;
+import com.lookballs.http.core.listener.AddHeadersListener;
+import com.lookballs.http.core.listener.OnRetryConditionListener;
 
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -35,6 +35,7 @@ public class StartApplication extends Application {
         builder.setLogEnabled(true);
         builder.setHttpClient(CustomOkHttpClient.getInstance().getOkHttpClient());
         builder.setDataConverter(new DataConverter());
+        builder.setBaseUrl("https://www.wanandroid.com/");
         builder.setRetry(2, 1000, new OnRetryConditionListener() {
             @Override
             public boolean retryCondition(Exception e) {

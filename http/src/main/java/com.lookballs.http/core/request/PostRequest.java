@@ -1,11 +1,11 @@
 package com.lookballs.http.core.request;
 
-import com.lookballs.http.core.model.HttpMethod;
+import com.lookballs.http.internal.define.HttpMethod;
 
 /**
  * post请求
  */
-public class PostRequest extends BodyRequest<PostRequest> {
+public class PostRequest extends BaseBodyRequest<PostRequest> {
 
     private PostRequest(String url) {
         super(url);

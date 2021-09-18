@@ -13,7 +13,7 @@ import com.lookballs.http.core.converter.IDataConverter;
 import com.lookballs.http.core.exception.DataException;
 import com.lookballs.http.core.exception.ResultException;
 import com.lookballs.http.core.exception.TokenException;
-import com.lookballs.http.utils.QuickLogUtils;
+import com.lookballs.http.core.utils.QuickLogUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;

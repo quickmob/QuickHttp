@@ -1,15 +1,15 @@
 package com.lookballs.http.core.request;
 
-import com.lookballs.http.core.model.BodyType;
-import com.lookballs.http.core.model.HttpCall;
-import com.lookballs.http.core.model.HttpHeaders;
-import com.lookballs.http.core.model.HttpMethod;
-import com.lookballs.http.core.model.HttpParams;
-import com.lookballs.http.core.model.HttpUrlParams;
+import com.lookballs.http.core.BodyType;
+import com.lookballs.http.internal.define.HttpCall;
+import com.lookballs.http.internal.define.HttpHeaders;
+import com.lookballs.http.internal.define.HttpMethod;
+import com.lookballs.http.internal.define.HttpParams;
+import com.lookballs.http.internal.define.HttpUrlParams;
 import com.lookballs.http.internal.callback.DownloadCallback;
-import com.lookballs.http.listener.OnDownloadListener;
-import com.lookballs.http.listener.OnHttpListener;
-import com.lookballs.http.utils.QuickUtils;
+import com.lookballs.http.core.listener.OnDownloadListener;
+import com.lookballs.http.core.listener.OnHttpListener;
+import com.lookballs.http.core.utils.QuickUtils;
 
 import java.io.File;
 
@@ -82,8 +82,16 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
 
     //开始下载请求
     public void start(OnDownloadListener listener) {
-        mHttpCall = new HttpCall(createCall());
-        mHttpCall.enqueue(new DownloadCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, mFilePath, mMD5, mRefreshTime, mBreakpointLength, mIsBreakpoint, listener));
+        if (mDelayMillis > 0) {
+            QuickUtils.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startRequest(listener);
+                }
+            }, mDelayMillis);
+        } else {
+            startRequest(listener);
+        }
     }
 
     @Override
@@ -124,4 +132,9 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
         }
     }
 
+    //创建下载请求
+    private void startRequest(OnDownloadListener listener) {
+        mHttpCall = new HttpCall(createCall());
+        mHttpCall.enqueue(new DownloadCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, mFilePath, mMD5, mRefreshTime, mBreakpointLength, mIsBreakpoint, listener));
+    }
 }

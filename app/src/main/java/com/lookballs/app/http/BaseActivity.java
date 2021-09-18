@@ -5,7 +5,7 @@ import android.app.ProgressDialog;
 import androidx.fragment.app.FragmentActivity;
 
 import com.blankj.utilcode.util.ToastUtils;
-import com.lookballs.http.listener.OnHttpListener;
+import com.lookballs.http.core.listener.OnHttpListener;
 
 import okhttp3.Call;
 

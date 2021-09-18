@@ -1,13 +1,13 @@
-package com.lookballs.http.config;
+package com.lookballs.http;
 
 import android.content.Context;
 
 import com.lookballs.http.core.converter.IDataConverter;
-import com.lookballs.http.core.model.BodyType;
-import com.lookballs.http.listener.AddHeadersListener;
-import com.lookballs.http.listener.AddParamsListener;
-import com.lookballs.http.listener.AddUrlParamsListener;
-import com.lookballs.http.listener.OnRetryConditionListener;
+import com.lookballs.http.core.BodyType;
+import com.lookballs.http.core.listener.AddHeadersListener;
+import com.lookballs.http.core.listener.AddParamsListener;
+import com.lookballs.http.core.listener.AddUrlParamsListener;
+import com.lookballs.http.core.listener.OnRetryConditionListener;
 
 import java.util.concurrent.TimeUnit;
 
@@ -78,6 +78,10 @@ public class HttpConfig {
         return builder.bodyType;
     }
 
+    public String getBaseUrl() {
+        return builder.baseUrl;
+    }
+
     public Context getContext() {
         return builder.context;
     }
@@ -94,6 +98,7 @@ public class HttpConfig {
         private int retryCount = 0;
         private long retryDelayMillis = 0;
         private OnRetryConditionListener onRetryConditionListener;
+        private String baseUrl;
 
         /**
          * 设置OkHttpClient
@@ -222,6 +227,17 @@ public class HttpConfig {
          */
         public Builder setBodyType(BodyType bodyType) {
             this.bodyType = bodyType;
+            return this;
+        }
+
+        /**
+         * 设置基本url
+         *
+         * @param baseUrl
+         * @return
+         */
+        public Builder setBaseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
             return this;
         }
 

@@ -1,10 +1,10 @@
 package com.lookballs.http.core.request;
 
-import com.lookballs.http.core.model.BodyType;
-import com.lookballs.http.core.model.HttpHeaders;
-import com.lookballs.http.core.model.HttpParams;
-import com.lookballs.http.core.model.HttpUrlParams;
-import com.lookballs.http.utils.QuickUtils;
+import com.lookballs.http.core.BodyType;
+import com.lookballs.http.core.utils.QuickUtils;
+import com.lookballs.http.internal.define.HttpHeaders;
+import com.lookballs.http.internal.define.HttpParams;
+import com.lookballs.http.internal.define.HttpUrlParams;
 
 import okhttp3.CacheControl;
 import okhttp3.HttpUrl;
@@ -13,7 +13,7 @@ import okhttp3.Request;
 /**
  * 不带RequestBody的请求
  */
-public abstract class UrlRequest<T extends UrlRequest> extends BaseRequest<T> {
+public abstract class BaseUrlRequest<T extends BaseUrlRequest> extends BaseRequest<T> {
 
     private CacheControl mCacheControl;//缓存控制器
 
@@ -23,7 +23,7 @@ public abstract class UrlRequest<T extends UrlRequest> extends BaseRequest<T> {
         return (T) this;
     }
 
-    public UrlRequest(String url) {
+    public BaseUrlRequest(String url) {
         super(url);
     }
 
@@ -40,7 +40,7 @@ public abstract class UrlRequest<T extends UrlRequest> extends BaseRequest<T> {
         requestBuilder.url(link);
         requestBuilder.method(getRequestMethod(), null);
 
-        printParam(requestUrl, tag, getRequestMethod(), mRetryCount, headers, urlParams, params);
+        printParam(requestUrl, tag, getRequestMethod(), headers, urlParams, params);
         return requestBuilder.build();
     }
 

@@ -1,19 +1,21 @@
 package com.lookballs.http.core.request;
 
+import android.text.TextUtils;
+
 import androidx.lifecycle.LifecycleOwner;
 
 import com.lookballs.http.QuickHttp;
+import com.lookballs.http.core.BodyType;
 import com.lookballs.http.core.converter.IDataConverter;
-import com.lookballs.http.core.model.BodyType;
-import com.lookballs.http.core.model.HttpCall;
-import com.lookballs.http.core.model.HttpHeaders;
-import com.lookballs.http.core.model.HttpParams;
-import com.lookballs.http.core.model.HttpUrlParams;
+import com.lookballs.http.core.listener.OnHttpListener;
+import com.lookballs.http.core.listener.OnRetryConditionListener;
+import com.lookballs.http.core.utils.QuickLogUtils;
+import com.lookballs.http.core.utils.QuickUtils;
 import com.lookballs.http.internal.callback.NormalCallback;
-import com.lookballs.http.listener.OnHttpListener;
-import com.lookballs.http.listener.OnRetryConditionListener;
-import com.lookballs.http.utils.QuickLogUtils;
-import com.lookballs.http.utils.QuickUtils;
+import com.lookballs.http.internal.define.HttpCall;
+import com.lookballs.http.internal.define.HttpHeaders;
+import com.lookballs.http.internal.define.HttpParams;
+import com.lookballs.http.internal.define.HttpUrlParams;
 
 import org.json.JSONObject;
 
@@ -44,7 +46,8 @@ public abstract class BaseRequest<T extends BaseRequest> {
     protected boolean mAssemblyHeaders = true;//是否使用公共请求头参数开关
     protected boolean mAssemblyParams = true;//是否使用公共请求参数开关
     protected boolean mAssemblyUrlParams = true;//是否使用公共请求url参数开关
-
+    protected long mDelayMillis = 0;//延时请求时间(毫秒)
+    protected String mBaseUrl;//基本url
     protected int mRetryCount = 0;//重试次数
     protected long mRetryDelayMillis = 0;//重试延时时间(毫秒)
     protected OnRetryConditionListener mOnRetryConditionListener = null;//重试条件回调
@@ -81,6 +84,12 @@ public abstract class BaseRequest<T extends BaseRequest> {
     //设置OkHttpClient
     public T client(OkHttpClient okHttpClient) {
         mOkHttpClient = okHttpClient;
+        return (T) this;
+    }
+
+    //设置延时请求时间
+    public T delayMillis(long delayMillis) {
+        mDelayMillis = delayMillis;
         return (T) this;
     }
 
@@ -150,26 +159,38 @@ public abstract class BaseRequest<T extends BaseRequest> {
     }
 
     //设置请求头
-    public T headers(HttpHeaders headers) {
-        mHeaders = headers;
+    public T addHeader(Map<String, String> params) {
+        if (mHeaders == null) {
+            mHeaders = new HttpHeaders();
+        }
+        mHeaders.putAll(params);
         return (T) this;
     }
 
-    //设置请求参数
-    public T params(HttpParams params) {
-        mParams = params;
+    //设置请求头
+    public T addHeader(String key, String value) {
+        if (mHeaders == null) {
+            mHeaders = new HttpHeaders();
+        }
+        mHeaders.put(key, value);
         return (T) this;
     }
 
     //设置请求url参数
-    public T urlParams(HttpUrlParams urlParams) {
-        mUrlParams = urlParams;
+    public T addUrlParam(Map<String, Object> params) {
+        if (mUrlParams == null) {
+            mUrlParams = new HttpUrlParams();
+        }
+        mUrlParams.putAll(params);
         return (T) this;
     }
 
-    //设置BodyType
-    public T bodyType(BodyType bodyType) {
-        mBodyType = bodyType;
+    //设置请求url参数
+    public T addUrlParam(String key, Object value) {
+        if (mUrlParams == null) {
+            mUrlParams = new HttpUrlParams();
+        }
+        mUrlParams.put(key, value);
         return (T) this;
     }
 
@@ -185,8 +206,8 @@ public abstract class BaseRequest<T extends BaseRequest> {
     }
 
     //设置公共包装参数开关
-    public T assemblyEnabled(boolean assemblyHeaders, boolean assemblyParams) {
-        return assemblyEnabled(assemblyHeaders, assemblyParams, true);
+    public T assemblyEnabled(boolean assemblyHeaders, boolean assemblyUrlParams) {
+        return assemblyEnabled(assemblyHeaders, true, assemblyUrlParams);
     }
 
     //设置公共包装参数开关
@@ -197,61 +218,46 @@ public abstract class BaseRequest<T extends BaseRequest> {
         return (T) this;
     }
 
+    //设置基本url
+    public T baseUrl(String baseUrl) {
+        mBaseUrl = baseUrl;
+        return (T) this;
+    }
+
     //开始同步请求
     public <B> B sync(Class<B> clazz) throws Exception {
-        try {
-            mHttpCall = new HttpCall(createCall());
-            Response response = mHttpCall.execute();
-            if (mDataConverter != null) {
-                return (B) mDataConverter.onSucceed(getLifecycleOwner(), response, QuickUtils.getParameterizedType(clazz));
-            }
-            return (B) QuickHttp.getConfig().getDataConverter().onSucceed(getLifecycleOwner(), response, QuickUtils.getParameterizedType(clazz));
-        } catch (Exception e) {
-            if (mDataConverter != null) {
-                throw mDataConverter.onFail(getLifecycleOwner(), e);
-            }
-            throw QuickHttp.getConfig().getDataConverter().onFail(getLifecycleOwner(), e);
+        if (mDelayMillis > 0) {
+            Thread.sleep(mDelayMillis);
         }
+        return syncRequest(clazz);
     }
 
     //开始异步请求
     public void async(OnHttpListener listener) {
-        mHttpCall = new HttpCall(createCall());
-        mHttpCall.enqueue(new NormalCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, listener, mDataConverter));
+        if (mDelayMillis > 0) {
+            QuickUtils.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    asyncRequest(null, listener);
+                }
+            }, mDelayMillis);
+        } else {
+            asyncRequest(null, listener);
+        }
     }
 
     //开始异步请求
     public <B> void async(Class<B> clazz, OnHttpListener listener) {
-        mHttpCall = new HttpCall(createCall());
-        mHttpCall.enqueue(new NormalCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, listener, clazz, mDataConverter));
-    }
-
-    //创建OkHttpClient
-    private OkHttpClient createOkHttpClient() {
-        if (mOkHttpClient == null) {
-            mOkHttpClient = QuickHttp.getConfig().getOkHttpClient();
+        if (mDelayMillis > 0) {
+            QuickUtils.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    asyncRequest(clazz, listener);
+                }
+            }, mDelayMillis);
+        } else {
+            asyncRequest(clazz, listener);
         }
-        final OkHttpClient okHttpClient = mOkHttpClient;
-        OkHttpClient.Builder builder = null;
-        if (mConnectTimeout != 0) {
-            if (builder == null) {
-                builder = okHttpClient.newBuilder();
-            }
-            builder.connectTimeout(mConnectTimeout, mConnectTimeOutUnit);
-        }
-        if (mReadTimeout != 0) {
-            if (builder == null) {
-                builder = okHttpClient.newBuilder();
-            }
-            builder.readTimeout(mReadTimeout, mReadTimeoutUnit);
-        }
-        if (mWriteTimeout != 0) {
-            if (builder == null) {
-                builder = okHttpClient.newBuilder();
-            }
-            builder.writeTimeout(mWriteTimeout, mWriteTimeoutUnit);
-        }
-        return builder != null ? builder.build() : okHttpClient;
     }
 
     //创建Call
@@ -289,7 +295,22 @@ public abstract class BaseRequest<T extends BaseRequest> {
         if (mBodyType == null) {
             mBodyType = QuickHttp.getConfig().getBodyType();
         }
-        return createOkHttpClient().newCall(createRequest(mUrl, mTag, mHeaders, mUrlParams, mParams, mBodyType));
+
+        String url;
+        if (QuickUtils.checkHttpUrl(mUrl)) {
+            url = mUrl;
+        } else {
+            if (!TextUtils.isEmpty(mBaseUrl)) {
+                url = mBaseUrl + mUrl;
+            } else {
+                if (!TextUtils.isEmpty(QuickHttp.getConfig().getBaseUrl())) {
+                    url = QuickHttp.getConfig().getBaseUrl() + mUrl;
+                } else {
+                    url = mUrl;
+                }
+            }
+        }
+        return createOkHttpClient().newCall(createRequest(url, mTag, mHeaders, mUrlParams, mParams, mBodyType));
     }
 
     //获取LifecycleOwner
@@ -303,13 +324,12 @@ public abstract class BaseRequest<T extends BaseRequest> {
     }
 
     //打印参数
-    protected void printParam(String url, Object tag, String method, int retryCount, HttpHeaders headers, HttpUrlParams urlParams, HttpParams params) {
+    protected void printParam(String url, Object tag, String method, HttpHeaders headers, HttpUrlParams urlParams, HttpParams params) {
         StringBuilder sb = new StringBuilder();
         sb.append("请求参数").append("\n");
         sb.append("Url：").append(url).append("\n");
         sb.append("Tag：").append(tag).append("\n");
         sb.append("Method：").append(method).append("\n");
-        sb.append("RetryCount：").append(retryCount).append("\n");
         sb.append("HttpHeaders：").append(headers.isEmpty() ? "" : new JSONObject(headers.getHeaders())).append("\n");
         sb.append("HttpParams：").append(params.isEmpty() ? "" : new JSONObject(params.getParams())).append("\n");
         sb.append("HttpUrlParams：").append(urlParams.isEmpty() ? "" : new JSONObject(urlParams.getParams())).append("\n");
@@ -322,4 +342,59 @@ public abstract class BaseRequest<T extends BaseRequest> {
     //创建Request
     protected abstract Request createRequest(String url, Object tag, HttpHeaders headers, HttpUrlParams urlParams, HttpParams params, BodyType bodyType);
 
+    //创建同步请求
+    private <B> B syncRequest(Class<B> clazz) throws Exception {
+        try {
+            mHttpCall = new HttpCall(createCall());
+            Response response = mHttpCall.execute();
+            if (mDataConverter != null) {
+                return (B) mDataConverter.onSucceed(getLifecycleOwner(), response, QuickUtils.getParameterizedType(clazz));
+            }
+            return (B) QuickHttp.getConfig().getDataConverter().onSucceed(getLifecycleOwner(), response, QuickUtils.getParameterizedType(clazz));
+        } catch (Exception e) {
+            if (mDataConverter != null) {
+                throw mDataConverter.onFail(getLifecycleOwner(), e);
+            }
+            throw QuickHttp.getConfig().getDataConverter().onFail(getLifecycleOwner(), e);
+        }
+    }
+
+    //创建异步请求
+    private void asyncRequest(Class clazz, OnHttpListener listener) {
+        if (clazz != null) {
+            mHttpCall = new HttpCall(createCall());
+            mHttpCall.enqueue(new NormalCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, listener, clazz, mDataConverter));
+        } else {
+            mHttpCall = new HttpCall(createCall());
+            mHttpCall.enqueue(new NormalCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, listener, mDataConverter));
+        }
+    }
+
+    //创建OkHttpClient
+    private OkHttpClient createOkHttpClient() {
+        if (mOkHttpClient == null) {
+            mOkHttpClient = QuickHttp.getConfig().getOkHttpClient();
+        }
+        final OkHttpClient okHttpClient = mOkHttpClient;
+        OkHttpClient.Builder builder = null;
+        if (mConnectTimeout != 0) {
+            if (builder == null) {
+                builder = okHttpClient.newBuilder();
+            }
+            builder.connectTimeout(mConnectTimeout, mConnectTimeOutUnit);
+        }
+        if (mReadTimeout != 0) {
+            if (builder == null) {
+                builder = okHttpClient.newBuilder();
+            }
+            builder.readTimeout(mReadTimeout, mReadTimeoutUnit);
+        }
+        if (mWriteTimeout != 0) {
+            if (builder == null) {
+                builder = okHttpClient.newBuilder();
+            }
+            builder.writeTimeout(mWriteTimeout, mWriteTimeoutUnit);
+        }
+        return builder != null ? builder.build() : okHttpClient;
+    }
 }

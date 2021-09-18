@@ -1,6 +1,6 @@
 package com.lookballs.http.core.model;
 
-import com.lookballs.http.utils.QuickUtils;
+import com.lookballs.http.core.utils.QuickUtils;
 
 /**
  * 下载信息

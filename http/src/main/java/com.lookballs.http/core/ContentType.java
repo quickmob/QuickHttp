@@ -1,4 +1,4 @@
-package com.lookballs.http.core.model;
+package com.lookballs.http.core;
 
 import okhttp3.MediaType;
 
