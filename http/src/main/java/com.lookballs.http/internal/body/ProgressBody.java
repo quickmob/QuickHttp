@@ -29,7 +29,7 @@ public final class ProgressBody extends RequestBody {
     private final UploadInfo mUploadInfo;//上传进度信息
     private final LifecycleOwner mLifecycleOwner;//LifecycleOwner
     private final boolean mBindLife;//是否绑定生命周期
-    private final long mRefreshTime;//上传回调进度刷新时间，默认10毫秒
+    private final long mRefreshTime;//上传回调进度刷新时间，默认0毫秒
     private final OnUploadListener mListener;//上传回调
 
     private long mTotalByte;//总字节数

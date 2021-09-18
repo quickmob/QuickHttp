@@ -57,13 +57,14 @@ public final class GsonDataConverter implements IDataConverter {
         StringBuilder sb = new StringBuilder();
         sb.append("请求结果\n");
         sb.append("Url：").append(response.request().url()).append("\n");
+        sb.append("RequestTimeConsuming：").append((response.receivedResponseAtMillis() - response.sentRequestAtMillis())).append("ms").append("\n");
         sb.append("ResponseCode：").append(response.code()).append("\n");
         sb.append("ResponseResult：");
         QuickLogUtils.json(QuickLogUtils.logTag, sb.toString(), text);
     }
 
     @Override
-    public Object onSucceed(@Nullable LifecycleOwner lifecycleOwner, Response response, Type type) throws Exception {
+    public Object onSucceed(@Nullable LifecycleOwner lifecycleOwner, String url, Response response, Type type) throws Exception {
         long currentTime = getResponseTimeMill(response);
         QuickLogUtils.i(TAG, "当前服务器时间：" + currentTime);
 
@@ -133,7 +134,7 @@ public final class GsonDataConverter implements IDataConverter {
     }
 
     @Override
-    public Exception onFail(@Nullable LifecycleOwner lifecycleOwner, Exception e) {
+    public Exception onFail(@Nullable LifecycleOwner lifecycleOwner, String url, Exception e) {
         QuickLogUtils.printStackTrace(e);
         return e;
     }

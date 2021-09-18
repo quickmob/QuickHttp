@@ -19,10 +19,12 @@ public class QuickLogUtils {
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     private static void printLine(String tag, boolean isTop) {
-        if (isTop) {
-            Log.w(tag, "╔═══════════════════════════════════════════════════════════════════════════════════════");
-        } else {
-            Log.w(tag, "╚═══════════════════════════════════════════════════════════════════════════════════════");
+        if (QuickHttp.getConfig().isLogEnabled()) {
+            if (isTop) {
+                Log.w(tag, "╔═══════════════════════════════════════════════════════════════════════════════════════");
+            } else {
+                Log.w(tag, "╚═══════════════════════════════════════════════════════════════════════════════════════");
+            }
         }
     }
 

@@ -7,13 +7,12 @@ import com.lookballs.http.core.converter.IDataConverter;
 import com.lookballs.http.core.exception.NullBodyException;
 import com.lookballs.http.core.exception.ResponseException;
 import com.lookballs.http.core.lifecycle.HttpLifecycleManager;
-import com.lookballs.http.internal.define.HttpCall;
-import com.lookballs.http.internal.GsonPreconditions;
-import com.lookballs.http.internal.GsonTypes;
 import com.lookballs.http.core.listener.OnHttpListener;
 import com.lookballs.http.core.listener.OnRetryConditionListener;
-import com.lookballs.http.core.utils.QuickLogUtils;
 import com.lookballs.http.core.utils.QuickUtils;
+import com.lookballs.http.internal.GsonPreconditions;
+import com.lookballs.http.internal.GsonTypes;
+import com.lookballs.http.internal.define.HttpCall;
 
 import java.lang.reflect.Type;
 
@@ -24,16 +23,18 @@ import okhttp3.Response;
  */
 public final class NormalCallback extends BaseCallback {
 
+    private final String mUrl;//请求url
     private final OnHttpListener mListener;//监听回调
     private final Class mClazz;//需要转换成数据的类
     private final IDataConverter mDataConverter;//数据转换器
 
-    public NormalCallback(LifecycleOwner lifecycleOwner, boolean isBindLife, HttpCall call, int retryCount, long retryDelayMillis, OnRetryConditionListener onRetryConditionListener, OnHttpListener listener, IDataConverter dataConverter) {
-        this(lifecycleOwner, isBindLife, call, retryCount, retryDelayMillis, onRetryConditionListener, listener, null, dataConverter);
+    public NormalCallback(LifecycleOwner lifecycleOwner, boolean isBindLife, HttpCall call, int retryCount, long retryDelayMillis, String url, OnRetryConditionListener onRetryConditionListener, OnHttpListener listener, IDataConverter dataConverter) {
+        this(lifecycleOwner, isBindLife, call, retryCount, retryDelayMillis, url, onRetryConditionListener, listener, null, dataConverter);
     }
 
-    public NormalCallback(LifecycleOwner lifecycleOwner, boolean isBindLife, HttpCall call, int retryCount, long retryDelayMillis, OnRetryConditionListener onRetryConditionListener, OnHttpListener listener, Class clazz, IDataConverter dataConverter) {
+    public NormalCallback(LifecycleOwner lifecycleOwner, boolean isBindLife, HttpCall call, int retryCount, long retryDelayMillis, String url, OnRetryConditionListener onRetryConditionListener, OnHttpListener listener, Class clazz, IDataConverter dataConverter) {
         super(lifecycleOwner, isBindLife, call, retryCount, retryDelayMillis, onRetryConditionListener);
+        mUrl = url;
         mListener = listener;
         mClazz = clazz;
         mDataConverter = dataConverter;
@@ -60,10 +61,6 @@ public final class NormalCallback extends BaseCallback {
         if (!response.isSuccessful()) {
             throw new ResponseException("response is unsuccessful，code：" + response.code() + "，message：" + response.message(), response);
         }
-
-        //打印请求耗时时间
-        QuickLogUtils.i("RequestTimeConsuming：" + (response.receivedResponseAtMillis() - response.sentRequestAtMillis()) + "ms");
-
         onSucceed(response);
     }
 
@@ -77,9 +74,9 @@ public final class NormalCallback extends BaseCallback {
 
         Object result = null;
         if (mDataConverter != null) {
-            result = mDataConverter.onSucceed(getLifecycleOwner(), response, type);
+            result = mDataConverter.onSucceed(getLifecycleOwner(), mUrl, response, type);
         } else {
-            result = QuickHttp.getConfig().getDataConverter().onSucceed(getLifecycleOwner(), response, type);
+            result = QuickHttp.getConfig().getDataConverter().onSucceed(getLifecycleOwner(), mUrl, response, type);
         }
         Object finalResult = result;
         QuickUtils.runOnUiThread(mListener != null, new Runnable() {
@@ -106,9 +103,9 @@ public final class NormalCallback extends BaseCallback {
     private void onFail(final int code, final Exception e) {
         Exception exception = null;
         if (mDataConverter != null) {
-            exception = mDataConverter.onFail(getLifecycleOwner(), e);
+            exception = mDataConverter.onFail(getLifecycleOwner(), mUrl, e);
         } else {
-            exception = QuickHttp.getConfig().getDataConverter().onFail(getLifecycleOwner(), e);
+            exception = QuickHttp.getConfig().getDataConverter().onFail(getLifecycleOwner(), mUrl, e);
         }
         Exception finalException = exception;
         QuickUtils.runOnUiThread(mListener != null, new Runnable() {

@@ -1,15 +1,15 @@
 package com.lookballs.http.core.request;
 
 import com.lookballs.http.core.BodyType;
+import com.lookballs.http.core.listener.OnDownloadListener;
+import com.lookballs.http.core.listener.OnHttpListener;
+import com.lookballs.http.core.utils.QuickUtils;
+import com.lookballs.http.internal.callback.DownloadCallback;
 import com.lookballs.http.internal.define.HttpCall;
 import com.lookballs.http.internal.define.HttpHeaders;
 import com.lookballs.http.internal.define.HttpMethod;
 import com.lookballs.http.internal.define.HttpParams;
 import com.lookballs.http.internal.define.HttpUrlParams;
-import com.lookballs.http.internal.callback.DownloadCallback;
-import com.lookballs.http.core.listener.OnDownloadListener;
-import com.lookballs.http.core.listener.OnHttpListener;
-import com.lookballs.http.core.utils.QuickUtils;
 
 import java.io.File;
 

@@ -1,5 +1,6 @@
 package com.lookballs.http.core.request;
 
+import com.lookballs.http.QuickHttp;
 import com.lookballs.http.core.BodyType;
 import com.lookballs.http.core.body.JsonBody;
 import com.lookballs.http.core.body.TextBody;
@@ -28,7 +29,7 @@ import okhttp3.RequestBody;
 public abstract class BaseBodyRequest<T extends BaseBodyRequest> extends BaseRequest<T> {
 
     private RequestBody mRequestBody;//RequestBody
-    private long mRefreshTime = 10;//上传回调进度刷新时间，默认10毫秒
+    private long mRefreshTime = 0;//上传回调进度刷新时间，默认0毫秒
     private OnUploadListener mOnUploadListener;//上传回调监听
 
     //设置请求参数
@@ -106,7 +107,10 @@ public abstract class BaseBodyRequest<T extends BaseBodyRequest> extends BaseReq
         requestBuilder.method(getRequestMethod(), body);
 
         printParam(requestUrl, tag, getRequestMethod(), headers, urlParams, params);
-        return requestBuilder.build();
+        if (mDataConverter != null) {
+            return mDataConverter.onStart(getLifecycleOwner(), mUrl, requestBuilder.build());
+        }
+        return QuickHttp.getConfig().getDataConverter().onStart(getLifecycleOwner(), mUrl, requestBuilder.build());
     }
 
     //创建RequestBody

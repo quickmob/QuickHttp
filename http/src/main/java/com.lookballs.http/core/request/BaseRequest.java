@@ -348,14 +348,14 @@ public abstract class BaseRequest<T extends BaseRequest> {
             mHttpCall = new HttpCall(createCall());
             Response response = mHttpCall.execute();
             if (mDataConverter != null) {
-                return (B) mDataConverter.onSucceed(getLifecycleOwner(), response, QuickUtils.getParameterizedType(clazz));
+                return (B) mDataConverter.onSucceed(getLifecycleOwner(), mUrl, response, QuickUtils.getParameterizedType(clazz));
             }
-            return (B) QuickHttp.getConfig().getDataConverter().onSucceed(getLifecycleOwner(), response, QuickUtils.getParameterizedType(clazz));
+            return (B) QuickHttp.getConfig().getDataConverter().onSucceed(getLifecycleOwner(), mUrl, response, QuickUtils.getParameterizedType(clazz));
         } catch (Exception e) {
             if (mDataConverter != null) {
-                throw mDataConverter.onFail(getLifecycleOwner(), e);
+                throw mDataConverter.onFail(getLifecycleOwner(), mUrl, e);
             }
-            throw QuickHttp.getConfig().getDataConverter().onFail(getLifecycleOwner(), e);
+            throw QuickHttp.getConfig().getDataConverter().onFail(getLifecycleOwner(), mUrl, e);
         }
     }
 
@@ -363,10 +363,10 @@ public abstract class BaseRequest<T extends BaseRequest> {
     private void asyncRequest(Class clazz, OnHttpListener listener) {
         if (clazz != null) {
             mHttpCall = new HttpCall(createCall());
-            mHttpCall.enqueue(new NormalCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, listener, clazz, mDataConverter));
+            mHttpCall.enqueue(new NormalCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mUrl, mOnRetryConditionListener, listener, clazz, mDataConverter));
         } else {
             mHttpCall = new HttpCall(createCall());
-            mHttpCall.enqueue(new NormalCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, listener, mDataConverter));
+            mHttpCall.enqueue(new NormalCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mUrl, mOnRetryConditionListener, listener, mDataConverter));
         }
     }
 

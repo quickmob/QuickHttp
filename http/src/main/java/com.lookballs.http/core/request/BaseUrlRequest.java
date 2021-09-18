@@ -1,5 +1,6 @@
 package com.lookballs.http.core.request;
 
+import com.lookballs.http.QuickHttp;
 import com.lookballs.http.core.BodyType;
 import com.lookballs.http.core.utils.QuickUtils;
 import com.lookballs.http.internal.define.HttpHeaders;
@@ -41,7 +42,10 @@ public abstract class BaseUrlRequest<T extends BaseUrlRequest> extends BaseReque
         requestBuilder.method(getRequestMethod(), null);
 
         printParam(requestUrl, tag, getRequestMethod(), headers, urlParams, params);
-        return requestBuilder.build();
+        if (mDataConverter != null) {
+            return mDataConverter.onStart(getLifecycleOwner(), mUrl, requestBuilder.build());
+        }
+        return QuickHttp.getConfig().getDataConverter().onStart(getLifecycleOwner(), mUrl, requestBuilder.build());
     }
 
 }
