@@ -5,16 +5,17 @@ import android.app.Application;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
+import com.lookballs.http.QuickHttp;
 import com.lookballs.http.core.ContentType;
-import com.lookballs.http.internal.define.HttpHeaders;
-import com.lookballs.http.internal.define.HttpUrlParams;
 import com.lookballs.http.internal.GsonPreconditions;
 import com.lookballs.http.internal.GsonTypes;
 import com.lookballs.http.internal.body.UploadBody;
+import com.lookballs.http.internal.define.HttpHeaders;
 
 import java.io.Closeable;
 import java.io.File;
@@ -28,7 +29,10 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -192,24 +196,37 @@ public class QuickUtils {
     /**
      * 获取拼接后的url
      */
-    public static String getSplitUrl(String url, HttpUrlParams httpUrlParams) {
-        StringBuilder sb = new StringBuilder();
-        if (!httpUrlParams.isEmpty() && httpUrlParams.getParams().size() > 0) {
+    public static String getSplitUrl(String url, Map<?, ?> params) {
+        String keys = getSplitKey(params);
+        if (!TextUtils.isEmpty(keys)) {
             if (url.indexOf('&') > 0 || url.indexOf('?') > 0) {
-                sb.append("&");
+                return url + "&" + keys;
             } else {
-                sb.append("?");
+                return url + "?" + keys;
             }
-            for (String key : httpUrlParams.getParams().keySet()) {
-                sb.append(key).append("=").append(httpUrlParams.getParams().get(key)).append("&");
+        } else {
+            return url;
+        }
+    }
+
+    /**
+     * 获取拼接后的key
+     */
+    public static String getSplitKey(Map<?, ?> params) {
+        if (params != null && params.size() > 0) {
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<?, ?> entry : params.entrySet()) {
+                String key = entry.getKey().toString();
+                sb.append(key).append("=").append(params.get(key)).append("&");
             }
+            //去除最后一个字符
+            String str = sb.toString();
+            if (str.length() > 0) {
+                str = str.substring(0, str.length() - 1);
+            }
+            return str;
         }
-        //去除最后一个字符
-        String params = sb.toString();
-        if (params.length() > 0) {
-            params = params.substring(0, params.length() - 1);
-        }
-        return url + params;
+        return "";
     }
 
     /**
@@ -246,7 +263,11 @@ public class QuickUtils {
         if (TextUtils.isEmpty(text)) {
             return "";
         }
-        return URLEncoder.encode(text);
+        try {
+            return URLEncoder.encode(text, "UTF-8");
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     /**
@@ -453,5 +474,101 @@ public class QuickUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * 构建缓存key
+     *
+     * @return
+     */
+    public static String buildCacheKey(String url, Map<String, Object> urlParams, Map<String, Object> params) {
+        Map<String, Object> newUrlParams = excludeCacheKey(urlParams);
+        Map<String, Object> newParams = excludeCacheKey(params);
+
+        String keys = null;
+        if (newUrlParams != null && newParams != null) {
+            newUrlParams.putAll(newParams);
+            keys = getSplitKey(newUrlParams);
+        } else if (newUrlParams != null && newParams == null) {
+            keys = getSplitKey(newUrlParams);
+        } else if (newUrlParams == null && newParams != null) {
+            keys = getSplitKey(newParams);
+        }
+        if (!TextUtils.isEmpty(keys)) {
+            return url + "&" + keys;
+        }
+        return url;
+    }
+
+    /**
+     * 过滤要剔除的cacheKey
+     *
+     * @param params
+     * @return
+     */
+    public static Map<String, Object> excludeCacheKey(Map<String, Object> params) {
+        if (params == null) return null;
+        List<String> excludeCacheKeys = QuickHttp.getConfig().getExcludeCacheKeys();
+        if (excludeCacheKeys.isEmpty()) return params;
+        Map<String, Object> newParams = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            String key = entry.getKey();
+            if (excludeCacheKeys.contains(key)) continue;
+            newParams.put(key, entry.getValue());
+        }
+        return newParams;
+    }
+
+    /**
+     * 获取一个缓存路径
+     *
+     * @param context
+     * @param uniqueName
+     * @return
+     */
+    public static File getDiskCacheDir(Context context, String uniqueName) {
+        String cachePath;
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) || !Environment.isExternalStorageRemovable()) {
+            cachePath = context.getExternalCacheDir().getPath();
+        } else {
+            cachePath = context.getCacheDir().getPath();
+        }
+        return new File(cachePath + File.separator + uniqueName);
+    }
+
+    /**
+     * 生成md5值
+     *
+     * @param str
+     * @return
+     */
+    public static String md5(String str) {
+        String cacheKey;
+        try {
+            final MessageDigest mDigest = MessageDigest.getInstance("MD5");
+            mDigest.update(str.getBytes());
+            cacheKey = bytesToHexString(mDigest.digest());
+        } catch (NoSuchAlgorithmException e) {
+            cacheKey = String.valueOf(str.hashCode());
+        }
+        return cacheKey;
+    }
+
+    /**
+     * bytesToHexString
+     *
+     * @param bytes
+     * @return
+     */
+    public static String bytesToHexString(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < bytes.length; i++) {
+            String hex = Integer.toHexString(0xFF & bytes[i]);
+            if (hex.length() == 1) {
+                sb.append('0');
+            }
+            sb.append(hex);
+        }
+        return sb.toString();
     }
 }

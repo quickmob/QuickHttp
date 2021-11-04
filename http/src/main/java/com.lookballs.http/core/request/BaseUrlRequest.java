@@ -30,8 +30,7 @@ public abstract class BaseUrlRequest<T extends BaseUrlRequest> extends BaseReque
 
     @Override
     protected Request createRequest(String url, Object tag, HttpHeaders headers, HttpUrlParams urlParams, HttpParams params, BodyType bodyType) {
-        String requestUrl = QuickUtils.getSplitUrl(url, urlParams);
-        Request.Builder requestBuilder = QuickUtils.createRequestBuilder(requestUrl, tag, headers);
+        Request.Builder requestBuilder = QuickUtils.createRequestBuilder(url, tag, headers);
         if (mCacheControl != null) {
             requestBuilder.cacheControl(mCacheControl);
         }
@@ -41,7 +40,7 @@ public abstract class BaseUrlRequest<T extends BaseUrlRequest> extends BaseReque
         requestBuilder.url(link);
         requestBuilder.method(getRequestMethod(), null);
 
-        printParam(requestUrl, tag, getRequestMethod(), headers, urlParams, params);
+        printParam(url, tag, getRequestMethod(), headers, urlParams, params);
         if (mDataConverter != null) {
             return mDataConverter.onStart(getLifecycleOwner(), mUrl, requestBuilder.build());
         }

@@ -100,13 +100,12 @@ public abstract class BaseBodyRequest<T extends BaseBodyRequest> extends BaseReq
 
     @Override
     protected Request createRequest(String url, Object tag, HttpHeaders headers, HttpUrlParams urlParams, HttpParams params, BodyType bodyType) {
-        String requestUrl = QuickUtils.getSplitUrl(url, urlParams);
-        Request.Builder requestBuilder = QuickUtils.createRequestBuilder(requestUrl, tag, headers);
+        Request.Builder requestBuilder = QuickUtils.createRequestBuilder(url, tag, headers);
 
         RequestBody body = mRequestBody != null ? mRequestBody : createRequestBody(params, bodyType);
         requestBuilder.method(getRequestMethod(), body);
 
-        printParam(requestUrl, tag, getRequestMethod(), headers, urlParams, params);
+        printParam(url, tag, getRequestMethod(), headers, urlParams, params);
         if (mDataConverter != null) {
             return mDataConverter.onStart(getLifecycleOwner(), mUrl, requestBuilder.build());
         }

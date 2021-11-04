@@ -116,7 +116,7 @@ public final class DownloadCallback extends BaseCallback {
         mDownloadInfo.setTotalLength(contentLength + breakpointLength);
         //>>>开始写入文件
         int readLength = 0;//读取长度
-        byte[] bytes = new byte[8192];
+        byte[] bytes = new byte[6 * 1024];
         long downloadSize = 0;//当前下载长度
         InputStream inputStream = response.body().byteStream();//拿到输入流
         FileOutputStream outputStream = new FileOutputStream(mFile, append);//拿到文件输出流

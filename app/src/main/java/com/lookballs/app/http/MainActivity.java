@@ -26,12 +26,14 @@ import com.lookballs.app.http.http.CustomHttpCallback;
 import com.lookballs.app.http.http.converter.GsonDataConverter;
 import com.lookballs.app.http.util.gson.GsonUtil;
 import com.lookballs.http.QuickHttp;
+import com.lookballs.http.core.cache.lru.DiskLruCacheHelper;
 import com.lookballs.http.core.lifecycle.ApplicationLifecycle;
 import com.lookballs.http.core.listener.OnDownloadListener;
 import com.lookballs.http.core.listener.OnHttpListener;
 import com.lookballs.http.core.listener.OnUploadListener;
 import com.lookballs.http.core.model.DownloadInfo;
 import com.lookballs.http.core.model.UploadInfo;
+import com.lookballs.http.core.utils.QuickUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -55,6 +57,8 @@ public class MainActivity extends BaseActivity {
 
     private ApplicationLifecycle applicationLifecycle = new ApplicationLifecycle();
 
+    private DiskLruCacheHelper diskLruCacheHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,6 +70,12 @@ public class MainActivity extends BaseActivity {
         tv_progress1 = findViewById(R.id.tv_progress1);
         downloadProgress2 = findViewById(R.id.downloadProgress2);
         tv_progress2 = findViewById(R.id.tv_progress2);
+        try {
+            diskLruCacheHelper = new DiskLruCacheHelper(QuickUtils.getDiskCacheDir(mActivity, "QuickHttpCache2"));
+            diskLruCacheHelper.put("cachekey", "1\n", "2\n", "3");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /***********************************类型传递***********************************/

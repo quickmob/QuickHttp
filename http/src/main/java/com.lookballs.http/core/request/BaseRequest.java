@@ -6,7 +6,10 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.lookballs.http.QuickHttp;
 import com.lookballs.http.core.BodyType;
+import com.lookballs.http.core.cache.CacheConfig;
+import com.lookballs.http.core.cache.CacheMode;
 import com.lookballs.http.core.converter.IDataConverter;
+import com.lookballs.http.core.interceptor.CacheInterceptor;
 import com.lookballs.http.core.listener.OnHttpListener;
 import com.lookballs.http.core.listener.OnRetryConditionListener;
 import com.lookballs.http.core.utils.QuickLogUtils;
@@ -57,10 +60,11 @@ public abstract class BaseRequest<T extends BaseRequest> {
     protected TimeUnit mConnectTimeOutUnit = TimeUnit.MILLISECONDS;//连接超时的时间单位
     protected TimeUnit mReadTimeoutUnit = TimeUnit.MILLISECONDS;//读取超时的时间单位
     protected TimeUnit mWriteTimeoutUnit = TimeUnit.MILLISECONDS;//写超时的时间单位
+    protected CacheConfig mCacheConfig;//缓存配置
 
-    //设置请求url
     public BaseRequest(String url) {
         mUrl = url;
+        mCacheConfig = QuickHttp.getConfig().getCacheConfig();
     }
 
     /**
@@ -224,6 +228,24 @@ public abstract class BaseRequest<T extends BaseRequest> {
         return (T) this;
     }
 
+    //设置缓存key
+    public T cacheKey(String cacheKey) {
+        mCacheConfig.setCacheKey(cacheKey);
+        return (T) this;
+    }
+
+    //设置缓存模式
+    public T cacheMode(CacheMode cacheMode) {
+        mCacheConfig.setCacheMode(cacheMode);
+        return (T) this;
+    }
+
+    //设置缓存缓存有效时长
+    public T cacheValidTime(long cacheValidTime) {
+        mCacheConfig.setCacheValidTime(cacheValidTime);
+        return (T) this;
+    }
+
     //开始同步请求
     public <B> B sync(Class<B> clazz) throws Exception {
         if (mDelayMillis > 0) {
@@ -296,19 +318,24 @@ public abstract class BaseRequest<T extends BaseRequest> {
             mBodyType = QuickHttp.getConfig().getBodyType();
         }
 
-        String url;
+        String baseUrl;
         if (QuickUtils.checkHttpUrl(mUrl)) {
-            url = mUrl;
+            baseUrl = mUrl;
         } else {
             if (!TextUtils.isEmpty(mBaseUrl)) {
-                url = mBaseUrl + mUrl;
+                baseUrl = mBaseUrl + mUrl;
             } else {
                 if (!TextUtils.isEmpty(QuickHttp.getConfig().getBaseUrl())) {
-                    url = QuickHttp.getConfig().getBaseUrl() + mUrl;
+                    baseUrl = QuickHttp.getConfig().getBaseUrl() + mUrl;
                 } else {
-                    url = mUrl;
+                    baseUrl = mUrl;
                 }
             }
+        }
+        String url = QuickUtils.getSplitUrl(baseUrl, mUrlParams.getParams());
+        if (TextUtils.isEmpty(mCacheConfig.getCacheKey())) {
+            String key = QuickUtils.buildCacheKey(url, mUrlParams.getParams(), mParams.getParams());
+            mCacheConfig.setCacheKey(key);
         }
         return createOkHttpClient().newCall(createRequest(url, mTag, mHeaders, mUrlParams, mParams, mBodyType));
     }
@@ -394,6 +421,12 @@ public abstract class BaseRequest<T extends BaseRequest> {
                 builder = okHttpClient.newBuilder();
             }
             builder.writeTimeout(mWriteTimeout, mWriteTimeoutUnit);
+        }
+        if (mCacheConfig.getCacheMode() != CacheMode.ONLY_REQUEST_NETWORK) {
+            if (builder == null) {
+                builder = okHttpClient.newBuilder();
+            }
+            builder.addInterceptor(new CacheInterceptor(mCacheConfig, QuickHttp.getConfig().getCacheStrategy()));
         }
         return builder != null ? builder.build() : okHttpClient;
     }
