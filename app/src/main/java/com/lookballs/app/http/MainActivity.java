@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 
+import com.blankj.utilcode.util.GsonUtils;
 import com.blankj.utilcode.util.IntentUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.lookballs.app.http.bean.BaseBean;
@@ -24,7 +25,6 @@ import com.lookballs.app.http.bean.banner.TestBean2;
 import com.lookballs.app.http.bean.banner.TestBean3;
 import com.lookballs.app.http.http.CustomHttpCallback;
 import com.lookballs.app.http.http.converter.GsonDataConverter;
-import com.lookballs.app.http.util.gson.GsonUtil;
 import com.lookballs.http.QuickHttp;
 import com.lookballs.http.core.cache.lru.DiskLruCacheHelper;
 import com.lookballs.http.core.lifecycle.ApplicationLifecycle;
@@ -93,7 +93,7 @@ public class MainActivity extends BaseActivity {
 
                     @Override
                     public void onSucceed(TestBean1<List<BannerBean>> result) {
-                        ToastUtils.showShort("请求结果" + GsonUtil.toJson(result));
+                        ToastUtils.showShort("请求结果" + GsonUtils.toJson(result));
                     }
 
                     @Override
@@ -120,7 +120,7 @@ public class MainActivity extends BaseActivity {
 
                     @Override
                     public void onSucceed(TestBean2<BannerBean> result) {
-                        ToastUtils.showShort("请求结果" + GsonUtil.toJson(result));
+                        ToastUtils.showShort("请求结果" + GsonUtils.toJson(result));
                     }
 
                     @Override
@@ -147,7 +147,7 @@ public class MainActivity extends BaseActivity {
 
                     @Override
                     public void onSucceed(TestBean3 result) {
-                        ToastUtils.showShort("请求结果" + GsonUtil.toJson(result));
+                        ToastUtils.showShort("请求结果" + GsonUtils.toJson(result));
                     }
 
                     @Override
@@ -174,7 +174,7 @@ public class MainActivity extends BaseActivity {
 
                     @Override
                     public void onSucceed(TestBean1 result) {
-                        ToastUtils.showShort("请求结果" + GsonUtil.toJson(result));
+                        ToastUtils.showShort("请求结果" + GsonUtils.toJson(result));
                     }
 
                     @Override
@@ -201,7 +201,7 @@ public class MainActivity extends BaseActivity {
 
                     @Override
                     public void onSucceed(TestBean2 result) {
-                        ToastUtils.showShort("请求结果" + GsonUtil.toJson(result));
+                        ToastUtils.showShort("请求结果" + GsonUtils.toJson(result));
                     }
 
                     @Override
@@ -228,7 +228,7 @@ public class MainActivity extends BaseActivity {
 
                     @Override
                     public void onSucceed(TestBean3 result) {
-                        ToastUtils.showShort("请求结果" + GsonUtil.toJson(result));
+                        ToastUtils.showShort("请求结果" + GsonUtils.toJson(result));
                     }
 
                     @Override
@@ -252,7 +252,7 @@ public class MainActivity extends BaseActivity {
                 .async(Object.class, new CustomHttpCallback(this) {
                     @Override
                     public void onSucceed(Object result) {
-                        ToastUtils.showShort("请求结果" + GsonUtil.toJson(result));
+                        ToastUtils.showShort("请求结果" + GsonUtils.toJson(result));
                     }
                 });
     }
@@ -264,7 +264,7 @@ public class MainActivity extends BaseActivity {
                 .async(new CustomHttpCallback<BaseBean>(this) {
                     @Override
                     public void onSucceed(BaseBean result) {
-                        ToastUtils.showShort("请求结果" + GsonUtil.toJson(result));
+                        ToastUtils.showShort("请求结果" + GsonUtils.toJson(result));
                     }
                 });
     }
@@ -285,7 +285,7 @@ public class MainActivity extends BaseActivity {
                             .addParam("username", "lookballs")
                             .addParam("password", "lookballs")
                             .sync(BaseBean.class);
-                    ToastUtils.showShort("请求结果" + GsonUtil.toJson(baseBean));
+                    ToastUtils.showShort("请求结果" + GsonUtils.toJson(baseBean));
                 } catch (Exception e) {
                     e.printStackTrace();
                     ToastUtils.showShort(e.getMessage());

@@ -1,4 +1,4 @@
-package com.lookballs.app.http.util;
+package com.lookballs.app.http.helper;
 
 import android.content.Context;
 import android.os.Build;
@@ -8,8 +8,7 @@ import android.webkit.WebSettings;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-public class Util {
-
+public class CommonHelper {
     private static String USER_AGENT;
 
     private static String OKHTTP_USER_AGENT;

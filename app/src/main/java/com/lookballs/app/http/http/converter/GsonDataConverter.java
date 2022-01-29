@@ -6,9 +6,9 @@ import android.graphics.BitmapFactory;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LifecycleOwner;
 
+import com.blankj.utilcode.util.GsonUtils;
 import com.google.gson.JsonSyntaxException;
 import com.lookballs.app.http.bean.BaseBean;
-import com.lookballs.app.http.util.gson.GsonUtil;
 import com.lookballs.http.core.converter.IDataConverter;
 import com.lookballs.http.core.exception.DataException;
 import com.lookballs.http.core.exception.ResultException;
@@ -112,7 +112,7 @@ public final class GsonDataConverter implements IDataConverter {
             } else {
                 try {
                     //处理Json解析结果
-                    result = GsonUtil.fromJson(text, type);
+                    result = GsonUtils.fromJson(text, type);
                 } catch (JsonSyntaxException e) {
                     throw new DataException("数据解析异常", e);
                 }

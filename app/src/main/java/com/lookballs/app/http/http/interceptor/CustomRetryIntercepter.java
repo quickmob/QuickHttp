@@ -1,4 +1,4 @@
-package com.lookballs.app.http.http;
+package com.lookballs.app.http.http.interceptor;
 
 import java.util.concurrent.TimeUnit;
 

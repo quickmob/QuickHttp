@@ -1,5 +1,6 @@
 package com.lookballs.app.http.http;
 
+import com.lookballs.app.http.http.interceptor.CustomHeadersInterceptor;
 import com.lookballs.http.core.utils.HttpsUtils;
 
 import java.util.Collections;
@@ -35,7 +36,7 @@ public class CustomOkHttpClient {
                     .sslSocketFactory(HttpsUtils.getSslSocketFactory().sSLSocketFactory, HttpsUtils.getSslSocketFactory().trustManager)
                     .hostnameVerifier(HttpsUtils.UnSafeHostnameVerifier)
                     .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))//TODO 如果是要上传文件和下载文件，这里不能传BODY
-                    .addInterceptor(new CustomHttpInterceptor())
+                    .addInterceptor(new CustomHeadersInterceptor())
                     .protocols(Collections.singletonList(Protocol.HTTP_1_1))
                     .dns(dns)
                     .build();

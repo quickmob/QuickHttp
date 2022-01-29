@@ -1,4 +1,4 @@
-package com.lookballs.app.http.http;
+package com.lookballs.app.http.http.interceptor;
 
 import java.io.IOException;
 
@@ -7,9 +7,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * 网络请求拦截器
+ * 自定义公共请求头参数拦截器
  */
-public class CustomHttpInterceptor implements Interceptor {
+public class CustomHeadersInterceptor implements Interceptor {
 
     @Override
     public Response intercept(Chain chain) throws IOException {
@@ -18,14 +18,9 @@ public class CustomHttpInterceptor implements Interceptor {
         Request.Builder requestBuilder = request.newBuilder();
         //设置User-Agent
         requestBuilder.removeHeader("User-Agent");
-        //requestBuilder.addHeader("User-Agent", Util.getUserAgent());
-        requestBuilder.url(getRequestUrl(request));
+        requestBuilder.header("User-Agent", "");
 
         Response response = chain.proceed(requestBuilder.build());
         return response;
-    }
-
-    private String getRequestUrl(Request request) {
-        return request.url().toString();
     }
 }
