@@ -17,7 +17,6 @@ public class CustomHeadersInterceptor implements Interceptor {
 
         Request.Builder requestBuilder = request.newBuilder();
         //设置User-Agent
-        requestBuilder.removeHeader("User-Agent");
         requestBuilder.header("User-Agent", "");
 
         Response response = chain.proceed(requestBuilder.build());

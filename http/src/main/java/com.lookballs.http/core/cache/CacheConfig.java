@@ -9,8 +9,10 @@ public class CacheConfig {
     private long cacheValidTime = -1;//缓存有效时间(默认-1，代表永久有效)
 
     public CacheConfig(CacheConfig cacheConfig) {
-        this.cacheValidTime = cacheConfig.cacheValidTime;
-        this.cacheMode = cacheConfig.cacheMode;
+        if (cacheConfig != null) {
+            this.cacheValidTime = cacheConfig.cacheValidTime;
+            this.cacheMode = cacheConfig.cacheMode;
+        }
     }
 
     public CacheConfig(CacheMode cacheMode, long cacheValidTime) {

@@ -422,7 +422,7 @@ public abstract class BaseRequest<T extends BaseRequest> {
             }
             builder.writeTimeout(mWriteTimeout, mWriteTimeoutUnit);
         }
-        if (mCacheConfig.getCacheMode() != CacheMode.ONLY_REQUEST_NETWORK) {
+        if (mCacheConfig.getCacheMode() != CacheMode.ONLY_REQUEST_NETWORK && QuickHttp.getConfig().getCacheStrategy() != null) {
             if (builder == null) {
                 builder = okHttpClient.newBuilder();
             }
