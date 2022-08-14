@@ -18,7 +18,11 @@ import okhttp3.OkHttpClient;
  */
 public class QuickHttp {
 
-    public static final int ERROR_CODE = -2020;
+    public static final int ERROR_CODE = -2020;//请求错误码
+    public static final int DEFAULT_DOWNLOAD_REFRESH_TIME = 100;//下载回调进度刷新时间
+    public static final int DEFAULT_DOWNLOAD_READ_BYTE_SIZE = 6 * 1024;//下载时每次读取流的最大值
+    public static final int DEFAULT_TIMEOUT_TIME = 10;//请求超时时间（单位秒）
+
 
     private static HttpConfig mConfig;
 

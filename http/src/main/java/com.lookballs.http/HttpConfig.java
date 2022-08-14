@@ -24,9 +24,9 @@ import okhttp3.OkHttpClient;
  */
 public class HttpConfig {
     static final OkHttpClient DEFAULT_OK_HTTP_CLIENT = new OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
-            .writeTimeout(10, TimeUnit.SECONDS)
+            .connectTimeout(QuickHttp.DEFAULT_TIMEOUT_TIME, TimeUnit.SECONDS)
+            .readTimeout(QuickHttp.DEFAULT_TIMEOUT_TIME, TimeUnit.SECONDS)
+            .writeTimeout(QuickHttp.DEFAULT_TIMEOUT_TIME, TimeUnit.SECONDS)
             //.addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
             //.sslSocketFactory(HttpsUtils.getSslSocketFactory().sSLSocketFactory, HttpsUtils.getSslSocketFactory().trustManager)
             //.hostnameVerifier(HttpsUtils.UnSafeHostnameVerifier)
@@ -51,6 +51,7 @@ public class HttpConfig {
     private CacheConfig cacheConfig;
     private ICacheStrategy cacheStrategy;
     private List<String> excludeCacheKeys = Collections.emptyList();
+    private int downloadReadByteSize = QuickHttp.DEFAULT_DOWNLOAD_READ_BYTE_SIZE;
 
     public HttpConfig() {
         this(new HttpConfig.Builder());
@@ -72,6 +73,7 @@ public class HttpConfig {
         this.cacheConfig = builder.cacheConfig;
         this.cacheStrategy = builder.cacheStrategy;
         this.excludeCacheKeys = builder.excludeCacheKeys;
+        this.downloadReadByteSize = builder.downloadReadByteSize;
     }
 
     public OkHttpClient getOkHttpClient() {
@@ -130,6 +132,10 @@ public class HttpConfig {
         return excludeCacheKeys;
     }
 
+    public int getDownloadReadByteSize() {
+        return downloadReadByteSize;
+    }
+
     public Context getContext() {
         return context;
     }
@@ -154,6 +160,7 @@ public class HttpConfig {
         private CacheConfig cacheConfig;
         private ICacheStrategy cacheStrategy;
         private List<String> excludeCacheKeys = Collections.emptyList();
+        private int downloadReadByteSize = QuickHttp.DEFAULT_DOWNLOAD_READ_BYTE_SIZE;
 
         public Builder() {
             context = null;
@@ -171,6 +178,7 @@ public class HttpConfig {
             cacheConfig = null;
             cacheStrategy = null;
             excludeCacheKeys = Collections.emptyList();
+            downloadReadByteSize = QuickHttp.DEFAULT_DOWNLOAD_READ_BYTE_SIZE;
         }
 
         Builder(HttpConfig httpConfig) {
@@ -189,6 +197,7 @@ public class HttpConfig {
             this.cacheConfig = httpConfig.cacheConfig;
             this.cacheStrategy = httpConfig.cacheStrategy;
             this.excludeCacheKeys = httpConfig.excludeCacheKeys;
+            this.downloadReadByteSize = httpConfig.downloadReadByteSize;
         }
 
         /**
@@ -364,6 +373,17 @@ public class HttpConfig {
          */
         public Builder setExcludeCacheKeys(String... keys) {
             this.excludeCacheKeys = Arrays.asList(keys);
+            return this;
+        }
+
+        /**
+         * 设置下载时每次读取流的最大值
+         *
+         * @param downloadReadByteSize 读取流的最大值
+         * @return
+         */
+        public Builder setDownloadReadByteSize(int downloadReadByteSize) {
+            this.downloadReadByteSize = downloadReadByteSize;
             return this;
         }
 

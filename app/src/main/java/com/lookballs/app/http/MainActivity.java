@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 
+import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.GsonUtils;
 import com.blankj.utilcode.util.IntentUtils;
 import com.blankj.utilcode.util.ToastUtils;
@@ -23,6 +24,7 @@ import com.lookballs.app.http.bean.banner.BannerBean;
 import com.lookballs.app.http.bean.banner.TestBean1;
 import com.lookballs.app.http.bean.banner.TestBean2;
 import com.lookballs.app.http.bean.banner.TestBean3;
+import com.lookballs.app.http.helper.CommonHelper;
 import com.lookballs.app.http.http.CustomHttpCallback;
 import com.lookballs.app.http.http.converter.GsonDataConverter;
 import com.lookballs.http.QuickHttp;
@@ -48,7 +50,7 @@ import okhttp3.Call;
 public class MainActivity extends BaseActivity {
 
     private ImageView showBitmap;
-    private TextView tv_progress, tv_progress1, tv_progress2;
+    private TextView tv_progress, tv_progress1, tv_progress2, tv_speed1, tv_speed2;
     private ProgressBar downloadProgress, downloadProgress1, downloadProgress2;
 
     private String text = "{\"data\":[{\"desc\":\"一起来做个App吧\",\"id\":10,\"imagePath\":\"https://www.wanandroid.com/blogimgs/50c115c2-cf6c-4802-aa7b-a4334de444cd.png\",\"isVisible\":1,\"order\":1,\"title\":\"一起来做个App吧\",\"type\":0,\"url\":\"https://www.wanandroid.com/blog/show/2\"},{\"desc\":\"\",\"id\":6,\"imagePath\":\"https://www.wanandroid.com/blogimgs/62c1bd68-b5f3-4a3c-a649-7ca8c7dfabe6.png\",\"isVisible\":1,\"order\":1,\"title\":\"我们新增了一个常用导航Tab~\",\"type\":1,\"url\":\"https://www.wanandroid.com/navi\"},{\"desc\":\"\",\"id\":20,\"imagePath\":\"https://www.wanandroid.com/blogimgs/90c6cc12-742e-4c9f-b318-b912f163b8d0.png\",\"isVisible\":1,\"order\":2,\"title\":\"flutter 中文社区 \",\"type\":1,\"url\":\"https://flutter.cn/\"}],\"errorCode\":0,\"errorMsg\":\"\"}";
@@ -68,8 +70,10 @@ public class MainActivity extends BaseActivity {
         tv_progress = findViewById(R.id.tv_progress);
         downloadProgress1 = findViewById(R.id.downloadProgress1);
         tv_progress1 = findViewById(R.id.tv_progress1);
+        tv_speed1 = findViewById(R.id.tv_speed1);
         downloadProgress2 = findViewById(R.id.downloadProgress2);
         tv_progress2 = findViewById(R.id.tv_progress2);
+        tv_speed2 = findViewById(R.id.tv_speed2);
         try {
             diskLruCacheHelper = new DiskLruCacheHelper(QuickUtils.getDiskCacheDir(mActivity, "QuickHttpCache2"));
             diskLruCacheHelper.put("cachekey", "1\n", "2\n", "3");
@@ -311,11 +315,6 @@ public class MainActivity extends BaseActivity {
                 .addParam("image", file)
                 .async(UploadBean.class, new OnUploadListener<UploadBean>() {
                     @Override
-                    public void onStart(Call call) {
-
-                    }
-
-                    @Override
                     public void onProgress(UploadInfo info) {
                         downloadProgress.setProgress(info.getProgress());
                         tv_progress.setText(info.getTextPreciseProgress() + "%");
@@ -333,11 +332,6 @@ public class MainActivity extends BaseActivity {
                     @Override
                     public void onError(int code, Exception e) {
                         ToastUtils.showShort("上传失败：" + e.getMessage());
-                    }
-
-                    @Override
-                    public void onEnd(Call call) {
-
                     }
                 });
     }
@@ -363,11 +357,6 @@ public class MainActivity extends BaseActivity {
                 .addParam(params)
                 .async(UploadFilesBean.class, new OnUploadListener<UploadFilesBean>() {
                     @Override
-                    public void onStart(Call call) {
-
-                    }
-
-                    @Override
                     public void onProgress(UploadInfo info) {
                         downloadProgress.setProgress(info.getProgress());
                         tv_progress.setText(info.getTextPreciseProgress() + "%");
@@ -385,11 +374,6 @@ public class MainActivity extends BaseActivity {
                     @Override
                     public void onError(int code, Exception e) {
                         ToastUtils.showShort("上传失败：" + e.getMessage());
-                    }
-
-                    @Override
-                    public void onEnd(Call call) {
-
                     }
                 });
     }
@@ -412,7 +396,7 @@ public class MainActivity extends BaseActivity {
             QuickHttp.cancel(applicationLifecycle);
         } else {
             view.setTag("1");
-            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "王者荣耀.apk");
+            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "王者荣耀1.apk");
             if (!file.exists()) {
                 file.createNewFile();
             }
@@ -423,19 +407,26 @@ public class MainActivity extends BaseActivity {
                     .breakpoint(0, false)
                     .start(new OnDownloadListener() {
                         @Override
-                        public void onStart(Call call) {
-
-                        }
-
-                        @Override
-                        public void onEnd(Call call) {
-
-                        }
-
-                        @Override
                         public void onProgress(DownloadInfo downloadInfo) {
                             downloadProgress1.setProgress(downloadInfo.getProgress());
                             tv_progress1.setText(downloadInfo.getTextPreciseProgress() + "%");
+                        }
+
+                        @Override
+                        public void onSpeed(DownloadInfo downloadInfo, long downloadSecond, long downloadSecondSize) {
+                            //在downloadSecond时间内下载了downloadSize
+                            if (downloadSecondSize > 0) {
+                                long speed = CommonHelper.getNetSpeed(AppUtils.getAppUid(), downloadSecond);
+                                long tempDownloadSecondSize = 0;
+                                if (speed > 0 && downloadSecondSize > speed) {
+                                    tempDownloadSecondSize = speed;
+                                } else {
+                                    tempDownloadSecondSize = downloadSecondSize;
+                                }
+                                String speedForamt = CommonHelper.getSpeedFormat(tempDownloadSecondSize);
+                                int surplus = (int) ((downloadInfo.getTotalLength() - downloadInfo.getDownloadLength()) / downloadSecondSize);
+                                tv_speed1.setText(speedForamt + " 剩余时间" + surplus + "秒");
+                            }
                         }
 
                         @Override
@@ -461,30 +452,37 @@ public class MainActivity extends BaseActivity {
             QuickHttp.cancel(MainActivity.this);
         } else {
             view.setTag("1");
-            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "爱奇艺.apk");
+            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "王者荣耀2.apk");
             if (!file.exists()) {
                 file.createNewFile();
             }
-            QuickHttp.download("https://d79f3d4c21d82eaeff5c767e7b36a903.dlied1.cdntips.net/imtt.dd.qq.com/16891/apk/BD2E03CA753137D287A6E6CDA4DF99FD.apk?mkey=60c2dcff7159069c&f=1ea3&fsname=com.qiyi.video_12.5.6_800120556.apk&csr=1bbd&cip=113.89.32.105&proto=https")
+            QuickHttp.download("https://imtt.dd.qq.com/16891/apk/B168BCBBFBE744DA4404C62FD18FFF6F.apk?fsname=com.tencent.tmgp.sgame_1.61.1.6_61010601.apk&csr=1bbd")
                     .bindLife(MainActivity.this)
                     .file(file)
                     .fileMd5("bd2e03ca753137d287a6e6cda4df99fd")
                     .breakpoint(file.length(), true)
                     .start(new OnDownloadListener() {
                         @Override
-                        public void onStart(Call call) {
-
-                        }
-
-                        @Override
-                        public void onEnd(Call call) {
-
-                        }
-
-                        @Override
                         public void onProgress(DownloadInfo downloadInfo) {
                             downloadProgress2.setProgress(downloadInfo.getProgress());
                             tv_progress2.setText(downloadInfo.getTextPreciseProgress() + "%");
+                        }
+
+                        @Override
+                        public void onSpeed(DownloadInfo downloadInfo, long downloadSecond, long downloadSecondSize) {
+                            //在downloadSecond时间内下载了downloadSize
+                            if (downloadSecondSize > 0) {
+                                long speed = CommonHelper.getNetSpeed(AppUtils.getAppUid(), downloadSecond);
+                                long tempDownloadSecondSize = 0;
+                                if (speed > 0 && downloadSecondSize > speed) {
+                                    tempDownloadSecondSize = speed;
+                                } else {
+                                    tempDownloadSecondSize = downloadSecondSize;
+                                }
+                                String speedForamt = CommonHelper.getSpeedFormat(tempDownloadSecondSize);
+                                int surplus = (int) ((downloadInfo.getTotalLength() - downloadInfo.getDownloadLength()) / downloadSecondSize);
+                                tv_speed2.setText(speedForamt + " 剩余时间" + surplus + "秒");
+                            }
                         }
 
                         @Override

@@ -12,7 +12,14 @@ public interface OnDownloadListener {
     /**
      * 下载进度改变
      */
-    void onProgress(DownloadInfo info);
+    default void onProgress(DownloadInfo info) {
+    }
+
+    /**
+     * 下载速度
+     */
+    default void onSpeed(DownloadInfo info, long downloadSecond, long downloadSize) {
+    }
 
     /**
      * 下载完成

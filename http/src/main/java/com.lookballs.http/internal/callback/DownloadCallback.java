@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import androidx.lifecycle.LifecycleOwner;
 
+import com.lookballs.http.QuickHttp;
 import com.lookballs.http.core.exception.MD5Exception;
 import com.lookballs.http.core.exception.NullBodyException;
 import com.lookballs.http.core.exception.ResponseException;
@@ -33,15 +34,18 @@ public final class DownloadCallback extends BaseCallback {
     private final DownloadInfo mDownloadInfo;//下载任务
     private final File mFile;//保存的文件
     private final boolean mIsBreakpoint;//是否开启断点续传下载
-    private final long mRefreshTime;//下载回调进度刷新时间，默认100毫秒
+    private final long mRefreshTime;//下载回调进度刷新时间
     private final long mBreakpointLength;//断点续传下载起始位置
+    private final int mDownloadReadByteSize;//读取流的最大值
     private final OnDownloadListener mListener;//下载监听回调
 
     private String mMD5;//校验的MD5
     private double lastProgress;//最后一次刷新的进度
     private long lastRefreshTime = 0L;//最后一次刷新进度的时间
+    private long beforeCalculTime = 0L;//上一次计算下载速度的时间
+    private int secondReadByteSize = 0;//每秒的读取值
 
-    public DownloadCallback(LifecycleOwner lifecycleOwner, boolean isBindLife, HttpCall call, int retryCount, long retryDelayMillis, OnRetryConditionListener onRetryConditionListener, String filePath, String md5, long refreshTime, long breakpointLength, boolean isBreakpoint, OnDownloadListener listener) {
+    public DownloadCallback(LifecycleOwner lifecycleOwner, boolean isBindLife, HttpCall call, int retryCount, long retryDelayMillis, OnRetryConditionListener onRetryConditionListener, String filePath, String md5, long refreshTime, long breakpointLength, boolean isBreakpoint, int downloadReadByteSize, OnDownloadListener listener) {
         super(lifecycleOwner, isBindLife, call, retryCount, retryDelayMillis, onRetryConditionListener);
         mDownloadInfo = new DownloadInfo(filePath);
         mDownloadInfo.setRefreshTime(refreshTime);
@@ -53,6 +57,7 @@ public final class DownloadCallback extends BaseCallback {
         mRefreshTime = refreshTime;
         mBreakpointLength = breakpointLength;
         mIsBreakpoint = isBreakpoint;
+        mDownloadReadByteSize = downloadReadByteSize;
         mListener = listener;
 
         QuickUtils.runOnUiThread(mListener != null, new Runnable() {
@@ -115,19 +120,20 @@ public final class DownloadCallback extends BaseCallback {
         //>>>设置文件总长度
         mDownloadInfo.setTotalLength(contentLength + breakpointLength);
         //>>>开始写入文件
-        int readLength = 0;//读取长度
-        byte[] bytes = new byte[6 * 1024];
-        long downloadSize = 0;//当前下载长度
         InputStream inputStream = response.body().byteStream();//拿到输入流
         FileOutputStream outputStream = new FileOutputStream(mFile, append);//拿到文件输出流
-        while ((readLength = inputStream.read(bytes)) != -1) {//循环遍历读写文件
+        int readByteSize = mDownloadReadByteSize > 0 ? mDownloadReadByteSize : QuickHttp.getConfig().getDownloadReadByteSize() > 0 ? QuickHttp.getConfig().getDownloadReadByteSize() : QuickHttp.DEFAULT_DOWNLOAD_READ_BYTE_SIZE;//读取的最大值
+        byte[] bytes = new byte[readByteSize];
+        long downloadSize = 0;//当前下载长度
+        int realReadByteSize = 0;//实际读取的值
+        while ((realReadByteSize = inputStream.read(bytes)) != -1) {//循环遍历读写文件
             if (downloadSize == 0) {
-                downloadSize += (readLength + breakpointLength);
+                downloadSize += (realReadByteSize + breakpointLength);
             } else {
-                downloadSize += readLength;
+                downloadSize += realReadByteSize;
             }
-            outputStream.write(bytes, 0, readLength);
-            downloading(downloadSize);
+            outputStream.write(bytes, 0, realReadByteSize);
+            downloading(downloadSize, realReadByteSize);
         }
         outputStream.flush();
         //>>>最后校验文件
@@ -144,11 +150,33 @@ public final class DownloadCallback extends BaseCallback {
     }
 
     //下载中
-    private void downloading(long downloadSize) {
+    private void downloading(long downloadSize, int realReadByteSize) {
+        final long currentTime = SystemClock.elapsedRealtime();
+        //计算下载速度
+        if (currentTime - beforeCalculTime >= 1000) {
+            float diffTime = currentTime - beforeCalculTime;
+            float averageSize = secondReadByteSize / diffTime;
+            long calSecondReadByteSize = (long) (averageSize * 1000);
+            beforeCalculTime = currentTime;
+            secondReadByteSize = 0;
+            QuickUtils.runOnUiThread(mListener != null, new Runnable() {
+                @Override
+                public void run() {
+                    if (isBindLife()) {
+                        if (HttpLifecycleManager.isLifecycleActive(getLifecycleOwner())) {
+                            mListener.onSpeed(mDownloadInfo, (long) diffTime, calSecondReadByteSize);
+                        }
+                    } else {
+                        mListener.onSpeed(mDownloadInfo, (long) diffTime, calSecondReadByteSize);
+                    }
+                }
+            });
+        } else {
+            secondReadByteSize += realReadByteSize;
+        }
+
         mDownloadInfo.setDownloadLength(downloadSize);
         mDownloadInfo.setFinish(false);
-
-        final long currentTime = SystemClock.elapsedRealtime();
         final double currentProgress = mDownloadInfo.getPreciseProgress();
         if (currentTime - lastRefreshTime >= mRefreshTime && currentProgress != lastProgress) {//避免短时间内的频繁回调和相同进度重复回调
             QuickUtils.runOnUiThread(mListener != null, new Runnable() {

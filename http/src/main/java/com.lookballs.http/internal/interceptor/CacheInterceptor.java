@@ -1,4 +1,4 @@
-package com.lookballs.http.core.interceptor;
+package com.lookballs.http.internal.interceptor;
 
 import com.lookballs.http.core.cache.CacheConfig;
 import com.lookballs.http.core.cache.CacheMode;

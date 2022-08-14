@@ -7,7 +7,7 @@ import com.lookballs.http.core.body.TextBody;
 import com.lookballs.http.core.listener.OnHttpListener;
 import com.lookballs.http.core.listener.OnUploadListener;
 import com.lookballs.http.core.utils.QuickUtils;
-import com.lookballs.http.internal.body.ProgressBody;
+import com.lookballs.http.internal.body.UploadProgressBody;
 import com.lookballs.http.internal.body.UploadBody;
 import com.lookballs.http.internal.define.HttpHeaders;
 import com.lookballs.http.internal.define.HttpParams;
@@ -29,7 +29,7 @@ import okhttp3.RequestBody;
 public abstract class BaseBodyRequest<T extends BaseBodyRequest> extends BaseRequest<T> {
 
     private RequestBody mRequestBody;//RequestBody
-    private long mRefreshTime = 0;//上传回调进度刷新时间，默认0毫秒
+    private long mRefreshTime = 0;//上传回调进度刷新时间
     private OnUploadListener mOnUploadListener;//上传回调监听
 
     //设置请求参数
@@ -181,7 +181,7 @@ public abstract class BaseBodyRequest<T extends BaseBodyRequest> extends BaseReq
             body = formBuilder.build();
         }
         if (mOnUploadListener != null) {
-            return new ProgressBody(body, getLifecycleOwner(), isBindLife(), mRefreshTime, mOnUploadListener);
+            return new UploadProgressBody(body, getLifecycleOwner(), isBindLife(), mRefreshTime, mOnUploadListener);
         } else {
             return body;
         }

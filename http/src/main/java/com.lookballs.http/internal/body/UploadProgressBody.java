@@ -23,13 +23,13 @@ import okio.Sink;
 /**
  * RequestBody代理类（用于获取上传进度）
  */
-public final class ProgressBody extends RequestBody {
+public final class UploadProgressBody extends RequestBody {
 
     private final RequestBody mRequestBody;//RequestBody
     private final UploadInfo mUploadInfo;//上传进度信息
     private final LifecycleOwner mLifecycleOwner;//LifecycleOwner
     private final boolean mBindLife;//是否绑定生命周期
-    private final long mRefreshTime;//上传回调进度刷新时间，默认0毫秒
+    private final long mRefreshTime;//上传回调进度刷新时间
     private final OnUploadListener mListener;//上传回调
 
     private long mTotalByte;//总字节数
@@ -37,7 +37,7 @@ public final class ProgressBody extends RequestBody {
     private double lastProgress;//最后一次刷新的进度
     private long lastRefreshTime = 0L;//最后一次刷新进度的时间
 
-    public ProgressBody(RequestBody body, LifecycleOwner lifecycleOwner, boolean isBindLife, long refreshTime, OnUploadListener listener) {
+    public UploadProgressBody(RequestBody body, LifecycleOwner lifecycleOwner, boolean isBindLife, long refreshTime, OnUploadListener listener) {
         mRequestBody = body;
         mUploadInfo = new UploadInfo();
         mLifecycleOwner = lifecycleOwner;

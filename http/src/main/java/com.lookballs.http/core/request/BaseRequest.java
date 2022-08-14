@@ -9,7 +9,7 @@ import com.lookballs.http.core.BodyType;
 import com.lookballs.http.core.cache.CacheConfig;
 import com.lookballs.http.core.cache.CacheMode;
 import com.lookballs.http.core.converter.IDataConverter;
-import com.lookballs.http.core.interceptor.CacheInterceptor;
+import com.lookballs.http.internal.interceptor.CacheInterceptor;
 import com.lookballs.http.core.listener.OnHttpListener;
 import com.lookballs.http.core.listener.OnRetryConditionListener;
 import com.lookballs.http.core.utils.QuickLogUtils;

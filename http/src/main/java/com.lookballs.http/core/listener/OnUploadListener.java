@@ -10,5 +10,6 @@ public interface OnUploadListener<T> extends OnHttpListener<T> {
     /**
      * 上传进度改变
      */
-    void onProgress(UploadInfo info);
+    default void onProgress(UploadInfo info) {
+    }
 }

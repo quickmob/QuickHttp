@@ -1,5 +1,6 @@
 package com.lookballs.http.core.request;
 
+import com.lookballs.http.QuickHttp;
 import com.lookballs.http.core.BodyType;
 import com.lookballs.http.core.listener.OnDownloadListener;
 import com.lookballs.http.core.listener.OnHttpListener;
@@ -23,9 +24,10 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
     private HttpMethod mMethod = HttpMethod.GET;//下载方式
     private String mFilePath;//保存的文件路径
     private String mMD5;//校验的MD5
-    private long mRefreshTime = 100;//下载回调进度刷新时间，默认100毫秒
+    private long mRefreshTime = QuickHttp.DEFAULT_DOWNLOAD_REFRESH_TIME;//下载回调进度刷新时间
     private long mBreakpointLength = 0;//断点续传下载起始位置
     private boolean mIsBreakpoint = false;//是否开启断点续传下载
+    private int mDownloadReadByteSize;//读取流的最大值
 
     private DownloadRequest(String url) {
         super(url);
@@ -61,7 +63,7 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
         return this;
     }
 
-    //设置下载回调进度刷新时间，默认100毫秒
+    //设置下载回调进度刷新时间
     public DownloadRequest refreshTime(long refreshTime) {
         if (refreshTime < 0) {
             refreshTime = 0;
@@ -77,6 +79,12 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
         }
         mBreakpointLength = breakpointLength;
         mIsBreakpoint = isBreakpoint;
+        return this;
+    }
+
+    //设置下载时每次读取流的最大值
+    public DownloadRequest setDownloadReadByteSize(int downloadReadByteSize) {
+        this.mDownloadReadByteSize = downloadReadByteSize;
         return this;
     }
 
@@ -135,6 +143,6 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
     //创建下载请求
     private void startRequest(OnDownloadListener listener) {
         mHttpCall = new HttpCall(createCall());
-        mHttpCall.enqueue(new DownloadCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, mFilePath, mMD5, mRefreshTime, mBreakpointLength, mIsBreakpoint, listener));
+        mHttpCall.enqueue(new DownloadCallback(getLifecycleOwner(), isBindLife(), mHttpCall, mRetryCount, mRetryDelayMillis, mOnRetryConditionListener, mFilePath, mMD5, mRefreshTime, mBreakpointLength, mIsBreakpoint, mDownloadReadByteSize, listener));
     }
 }
